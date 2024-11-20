@@ -1,0 +1,1 @@
+Este archivo debe explicar qué hace el proyecto, cómo instalar las dependencias, cómo ejecutar el código, y cualquier detalle importante sobre el uso de Pygame y OpenAI Gym. Esto puede ser útil tanto para ti como para otras personas que colaboren o vean tu proyecto.

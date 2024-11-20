@@ -1,0 +1,30 @@
+/Project RL - Warehouse/
+│
+├── /assets/                 # Carpeta para recursos (imágenes, sonidos, etc.)
+│   ├── logo.png             # Ejemplo de imagen que puedes usar para el logo
+│   └── fondo_menu.jpg       # Fondo para los menús
+│
+├── /entornos/               # Carpeta para entornos personalizados
+│   └── mi_entorno.py        # Archivo que contiene la definición del entorno personalizado
+│
+├── /menus/                  # Carpeta para los diferentes menús
+│   ├── menu_principal.py    # Lógica para el menú principal
+│   └── menu_info.py         # Lógica para el menú de información
+│
+├── /entorno_gym/            # Carpeta para la ejecución del entorno de OpenAI Gym
+│   └── ejecutar_gym.py      # Lógica para ejecutar el entorno de OpenAI Gym
+│
+├── /utils/                  # Carpeta para funciones auxiliares
+│   └── botones.py           # Funciones para crear y gestionar botones
+│
+├── main.py                  # Archivo principal que orquesta la aplicación
+└── README.md                # Información general sobre el proyecto
+
+Flujo de Ejecución del Código
+El flujo de ejecución del código sería algo como esto:
+
+El archivo main.py se ejecuta.
+main.py carga el menú principal de menu_principal.py.
+Cuando el usuario hace clic en "Ir a Información", se llama a menu_info.py.
+Cuando el usuario hace clic en "Ejecutar Entorno Gym", se llama a ejecutar_gym.py para iniciar el entorno de OpenAI Gym.
+El código se organiza de manera modular, lo que facilita su mantenimiento y escalabilidad.
