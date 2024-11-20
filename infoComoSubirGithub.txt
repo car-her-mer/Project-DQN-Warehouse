@@ -19,4 +19,4 @@ git remote set-url origin https://github.com/car-her-mer/nombreRepositorio.git  
 Project_RL-Warehouse.git
 Ajedrez.git
 git remote -v (comprobar a que repositorio apunto)
-git reset  
+git reset    
