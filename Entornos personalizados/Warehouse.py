@@ -32,7 +32,7 @@ class MiEntorno(gym.Env):
         self.action_space = spaces.Discrete(2)  # Dos acciones: 0 (izquierda) o 1 (derecha)
         
         # Crear la ventana de Pygame
-        self.screen = pygame.display.set_mode((1280, 720))  # Tamaño de la ventana
+        self.screen = pygame.display.set_mode((1280, 820))  # Tamaño de la ventana
         pygame.display.set_caption("Warehouse Environment")
 
         # Variable de control para el estado de la ventana
@@ -101,7 +101,12 @@ class MiEntorno(gym.Env):
 
             # Aquí puedes agregar tu código de renderizado, como dibujar elementos en la pantalla
             # Dibujar un segundo rectángulo más pequeño (blanco)
-            pygame.draw.rect(self.screen, (255, 255, 255), (20, 20, 1240, 500))  # x, y, ancho, alto
+            # pygame.draw.rect(self.screen, (255, 255, 255), (20, 20, 1240, 645))  # x, y, ancho, alto
+
+            # Cargar la imagen
+            mi_dibujo = pygame.image.load("D:\\programacion\\IA\\Project_RL-Warehouse\\Assets\\fondo.png")
+            
+            self.screen.blit(mi_dibujo, (20, 20))
 
             # Mostrar el estado (para debug)
             font = pygame.font.Font(None, 36)
@@ -110,11 +115,11 @@ class MiEntorno(gym.Env):
 
             # Mostrar la puntuación actual
             score_text = font.render(f"Puntuación: {self.current_score}", True, (0, 0, 0))
-            self.screen.blit(score_text, (50, 560))  # Posición debajo del rectángulo blanco
+            self.screen.blit(score_text, (40, 680))  # Posición debajo del rectángulo blanco
 
             # Mostrar el episodio actual
             episode_text = font.render(f"Episodio: {self.current_episode}", True, (0, 0, 0))
-            self.screen.blit(episode_text, (50, 600))  # Posición debajo de la puntuación
+            self.screen.blit(episode_text, (40, 720))  # Posición debajo de la puntuación
 
             # Actualizar la pantalla
             pygame.display.flip()
