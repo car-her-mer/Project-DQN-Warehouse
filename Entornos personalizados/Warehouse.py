@@ -35,6 +35,13 @@ class MiEntorno(gym.Env):
         self.screen = pygame.display.set_mode((1280, 820))  # Tamaño de la ventana
         pygame.display.set_caption("Warehouse Environment")
 
+        # Dirección inicial del agente (en grados, 0 = derecha, 90 = abajo, 180 = izquierda, 270 = arriba)
+        self.agent_angle = 0  
+        self.target_angle = 0  # Ángulo objetivo para rotación suave
+        # Velocidad del agente (en píxeles por paso)
+        self.agent_speed = 0.5  # Movimiento más lento, como un robot con ruedas (mayor numero = mayor velocidad y viceversa)
+        self.rotation_speed = 5  # Velocidad de rotación (en grados por frame)
+        
         # Inicializar la posición del agente (x, y)
         self.agent_position = [640, 410]  # Centro de la pantalla
 
@@ -67,22 +74,35 @@ class MiEntorno(gym.Env):
         """
         self.current_step += 1  # Incrementar el contador de pasos
 
-        # Calcular la recompensa
-        reward = 1.0 if self.state[0] == 10 else -0.1
-
-        # Actualizar la puntuación (por ejemplo, acumulando recompensas)
-        self.current_score += reward
-
         # Actualizar el estado basado en la acción
         if action == 0:  # Movimiento hacia la izquierda
             self.state -= 1
-            self.agent_position[0] -= 10  # Mover el agente a la izquierda
+            self.agent_position[0] -= self.agent_speed  # Mover el agente a la izquierda 
+            self.target_angle = 180  # Establecer ángulo objetivo hacia la izquierda
         elif action == 1:  # Movimiento hacia la derecha
             self.state += 1
-            self.agent_position[0] += 10  # Mover el agente a la derecha
+            self.agent_position[0] += self.agent_speed  # Mover el agente a la derecha (menor numero = menor velocidad)
+            self.target_angle = 0  # Establecer ángulo objetivo hacia la derecha
+        # (Opcional) Si incluyes movimientos arriba y abajo:
+        elif action == 2:  # Movimiento hacia arriba
+            self.state += 0.5
+            self.agent_position[1] -= self.agent_speed
+            self.target_angle = 270  # Establecer ángulo objetivo hacia arriba
+        elif action == 3:  # Movimiento hacia abajo
+            self.state -= 0.5
+            self.agent_position[1] += self.agent_speed
+            self.target_angle = 90  # Establecer ángulo objetivo hacia abajo
 
-        # Limitar la posición del agente dentro de los bordes de la ventana
+         # Rotar el agente lentamente hacia el ángulo objetivo
+        angle_diff = (self.target_angle - self.agent_angle) % 360
+        if angle_diff > 180:
+            angle_diff -= 360
+        rotation_step = min(self.rotation_speed, abs(angle_diff)) * np.sign(angle_diff)
+        self.agent_angle = (self.agent_angle + rotation_step) % 360
+
+        # Limitar la posición del agente para que no se salga de la pantalla
         self.agent_position[0] = max(0, min(self.agent_position[0], 1280 - self.agent_width))
+        self.agent_position[1] = max(0, min(self.agent_position[1], 720 - self.agent_height))
 
         # Limitar el estado al rango permitido
         self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
@@ -94,6 +114,12 @@ class MiEntorno(gym.Env):
         else:
             self.done = False
             truncated = False  # El episodio no se truncó
+
+        # Calcular la recompensa
+        reward = 1.0 if self.state[0] == 10 else -0.1
+
+        # Actualizar la puntuación (por ejemplo, acumulando recompensas)
+        self.current_score += reward
 
         # Devolver la observación (convertida a float32), la recompensa, el estado de finalización y truncamiento, y un diccionario vacío
         return self.state.astype(np.float32), reward, self.done, truncated, {}
@@ -121,8 +147,11 @@ class MiEntorno(gym.Env):
             mi_dibujo = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\fondo.png")
             self.screen.blit(mi_dibujo, (20, 20))
 
-            # Dibujar la imagen del agente en la posición especificada
-            self.screen.blit(self.agent_image, (self.agent_position[0], self.agent_position[1]))
+            # Dibujar el agente con la rotación actual
+            rotated_agent = pygame.transform.rotate(self.agent_image, self.agent_angle)
+            agent_rect = rotated_agent.get_rect(center=(self.agent_position[0] + self.agent_width // 2,
+                                                        self.agent_position[1] + self.agent_height // 2))
+            self.screen.blit(rotated_agent, agent_rect.topleft)
             #print(f"Posición del agente: {self.agent_position}")
 
             # Mostrar el estado (para debug)
