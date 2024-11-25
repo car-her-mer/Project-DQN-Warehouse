@@ -35,6 +35,15 @@ class MiEntorno(gym.Env):
         self.screen = pygame.display.set_mode((1280, 820))  # Tamaño de la ventana
         pygame.display.set_caption("Warehouse Environment")
 
+        # Inicializar la posición del agente (x, y)
+        self.agent_position = [640, 410]  # Centro de la pantalla
+
+        # Cargar y redimensionar la imagen del agente
+        self.agent_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\agente.png").convert_alpha()
+        self.agent_width = 50  # Ancho del agente
+        self.agent_height = 50  # Alto del agente (si es necesario)
+        self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))  # Redimensionar la imagen
+
         # Variable de control para el estado de la ventana
         self.window_open = True
 
@@ -67,8 +76,13 @@ class MiEntorno(gym.Env):
         # Actualizar el estado basado en la acción
         if action == 0:  # Movimiento hacia la izquierda
             self.state -= 1
+            self.agent_position[0] -= 10  # Mover el agente a la izquierda
         elif action == 1:  # Movimiento hacia la derecha
             self.state += 1
+            self.agent_position[0] += 10  # Mover el agente a la derecha
+
+        # Limitar la posición del agente dentro de los bordes de la ventana
+        self.agent_position[0] = max(0, min(self.agent_position[0], 1280 - self.agent_width))
 
         # Limitar el estado al rango permitido
         self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
@@ -104,9 +118,12 @@ class MiEntorno(gym.Env):
             # pygame.draw.rect(self.screen, (255, 255, 255), (20, 20, 1240, 645))  # x, y, ancho, alto
 
             # Cargar la imagen
-            mi_dibujo = pygame.image.load("D:\\programacion\\IA\\Project_RL-Warehouse\\Assets\\fondo.png")
-            
+            mi_dibujo = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\fondo.png")
             self.screen.blit(mi_dibujo, (20, 20))
+
+            # Dibujar la imagen del agente en la posición especificada
+            self.screen.blit(self.agent_image, (self.agent_position[0], self.agent_position[1]))
+            #print(f"Posición del agente: {self.agent_position}")
 
             # Mostrar el estado (para debug)
             font = pygame.font.Font(None, 36)
