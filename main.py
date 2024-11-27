@@ -7,3 +7,7 @@
 
 # se cargan los menús de la interfaz gráfica, 
 # llamando a las funciones de menu_principal.py y menu_info.py.
+
+from Entornos_personalizados.RegistrarEntorno import Registrar
+
+Registrar()

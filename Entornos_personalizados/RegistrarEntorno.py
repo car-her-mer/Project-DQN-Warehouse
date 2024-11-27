@@ -25,7 +25,8 @@ while env.window_open:
         action = env.action_space.sample()
 
         # Realizar el paso en el entorno
-        state, reward, done, truncated, info = env.step(action)
+        #state, reward, done, truncated, info = env.step(action)
+        state, reward, done, info = env.step(action)
 
         # Llamada a render para mostrar el entorno visualmente
         env.render(mode='human')

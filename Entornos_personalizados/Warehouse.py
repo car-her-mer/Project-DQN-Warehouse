@@ -97,10 +97,19 @@ class MiEntorno(gym.Env):
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
         self.current_episode += 1  # Incrementar el episodio
-        self.countdown_time = 60  # Resetear el tiempo de cuenta regresiva
+        self.start_time = time.time()  # Reiniciar el tiempo de inicio al reiniciar el entorno
         self.reward_position = self.get_random_reward_position()  # Nueva posición de recompensa
+        self.reward_collected = False  # Reiniciar la bandera de recompensa recogida
         # Devuelve la observación (estado) como float32 y un diccionario vacío para la nueva API.
+        
+        # DEBUG: Verifica la posición de la recompensa
+        print(f"Reiniciando episodio {self.current_episode}. Nueva posición de recompensa: {self.reward_position}")
+
         self.agent_position = [640, 410]  # Volver al centro
+
+        # DEBUG: Verifica la posición inicial del agente
+        print(f"Posición inicial del agente: {self.agent_position}")
+
         return np.array(self.agent_position, dtype=np.float32), {}
 
     def get_random_reward_position(self):
@@ -129,11 +138,15 @@ class MiEntorno(gym.Env):
         elapsed_time = time.time() - self.start_time
         self.countdown_time = max(0, 60 - int(elapsed_time))  # Tiempo restante en segundos
 
+        # DEBUG: Verifica el tiempo restante
+        print(f"Tiempo restante: {self.countdown_time} segundos")
+
         # Si el tiempo se acabó, penalizar y reiniciar
         if self.countdown_time == 0:
             reward = -10  # Penalización cuando el tiempo se acaba
-            self.reset()  # Reiniciar el episodio
-            return self.state.astype(np.float32), reward, self.done, False, {}
+            self.done = True  # Marcar el episodio como terminado
+            print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
+            return self.state.astype(np.float32), reward, self.done, True, {}
 
         # Actualizar el estado basado en la acción
         if action == 0:  # Movimiento hacia la izquierda
@@ -154,9 +167,16 @@ class MiEntorno(gym.Env):
             self.agent_position[1] += self.agent_speed
             self.target_angle = 90  # Establecer ángulo objetivo hacia abajo
 
+        # DEBUG: Verifica la nueva posición del agente después de la acción
+        print(f"Posición del agente después de la acción: {self.agent_position}")
+
         # Verificar colisión antes de mover
-        if not self.check_collision(self.agent_position[0], self.agent_position[1]):
-            self.agent_position = [self.agent_position[0], self.agent_position[1]]
+        if self.check_collision(self.agent_position[0], self.agent_position[1]):
+            reward = -5  # Penalización por colisión con obstáculos
+            print(f"Colisión detectada. Penalización: {reward}")
+
+        else:
+            reward = 0  # Si no hay colisión, no hay penalización
 
         # Rotar el agente lentamente hacia el ángulo objetivo
         angle_diff = (self.target_angle - self.agent_angle) % 360
@@ -169,14 +189,16 @@ class MiEntorno(gym.Env):
         agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
         reward_rect = pygame.Rect(self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size)
 
+        # DEBUG: Verifica las posiciones de colisión del agente y la recompensa
+        print(f"Posición del agente: {self.agent_position}")
+        print(f"Posición de la recompensa: {self.reward_position}")
+
         # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
-        if agent_rect.colliderect(reward_rect):
-            reward = 10  # Sumar una recompensa cuando el agente toca el cuadrado
-            self.current_score += reward  # Incrementar la puntuación
+        if agent_rect.colliderect(reward_rect) and not self.reward_collected:
+            reward += 10  # Sumar una recompensa cuando el agente toca el cuadrado
+            print("¡Recompensa recogida! Recompensa adicional: +10")
             self.reward_position = self.get_random_reward_position()  # Reubicar la recompensa
-            self.current_score = 0  # Reiniciar la puntuación cuando toque la recompensa
-        else:
-            reward = -0.1  # Penalización si no toca el cuadrado
+            self.reward_collected = True  # Marcar que la recompensa ha sido recogida
 
         # Limitar la posición del agente para que no se salga de la pantalla
         self.agent_position[0] = max(0, min(self.agent_position[0], 1280 - self.agent_width))
@@ -188,10 +210,12 @@ class MiEntorno(gym.Env):
         # Verificar si el episodio ha terminado
         if self.current_step >= self.max_steps:
             self.done = True
-            truncated = False  # No se truncó el episodio, solo se terminó
+            #truncated = False  # No se truncó el episodio, solo se terminó
+            print(f"Episodio terminado después de {self.current_step} pasos.")
+
         else:
             self.done = False
-            truncated = False  # El episodio no se truncó
+            #truncated = False  # El episodio no se truncó
 
         # Calcular la recompensa
         #reward = 1.0 if self.state[0] == 10 else -0.1
@@ -200,7 +224,8 @@ class MiEntorno(gym.Env):
         #self.current_score += reward
 
         # Devolver la observación (convertida a float32), la recompensa, el estado de finalización y truncamiento, y un diccionario vacío
-        return self.state.astype(np.float32), reward, self.done, truncated, {}
+        #return self.state.astype(np.float32), reward, self.done, truncated, {}
+        return self.state.astype(np.float32), reward, self.done, {}
 
     def render(self, mode="human"):
         """
