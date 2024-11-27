@@ -58,8 +58,7 @@ class MiEntorno(gym.Env):
         #self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))  # Redimensionar la imagen
 
          # Máscara de colisiones (generada previamente)
-        self.collision_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
-        self.collision_mask = pygame.surfarray.array_alpha(self.collision_mask) == 0  # Zonas negras = obstáculos
+        #self.collision_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
 
         original_width, original_height = self.agent_image.get_size()
         scale_factor = 0.2  # Ajusta este valor para el tamaño final deseado
@@ -76,7 +75,7 @@ class MiEntorno(gym.Env):
 
         # Variable de control para el estado de la ventana
         self.window_open = True
-
+    """
     def check_collision(self, x, y):
         #Verifica si el agente colisiona con una zona no permitida.
         agent_rect = pygame.Rect(x, y, self.agent_width, self.agent_height)
@@ -85,7 +84,7 @@ class MiEntorno(gym.Env):
                 if self.collision_mask[py, px]:  # Verificar si la posición es colisión
                     return True
         return False
-    
+    """
     def reset(self, seed=None, options=None):
         """
         Reinicia el entorno al estado inicial.
@@ -97,6 +96,7 @@ class MiEntorno(gym.Env):
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
         self.current_episode += 1  # Incrementar el episodio
+        self.countdown_time = 60
         self.start_time = time.time()  # Reiniciar el tiempo de inicio al reiniciar el entorno
         self.reward_position = self.get_random_reward_position()  # Nueva posición de recompensa
         self.reward_collected = False  # Reiniciar la bandera de recompensa recogida
@@ -113,26 +113,18 @@ class MiEntorno(gym.Env):
         return np.array(self.agent_position, dtype=np.float32), {}
 
     def get_random_reward_position(self):
-        # Genera una posición aleatoria dentro de los límites del fondo para la recompensa.
-        # Limitar el área dentro de los bordes permitidos del fondo
-        while True:
-            x = np.random.randint(100, 1180 - self.reward_square_size)
-            y = np.random.randint(100, 680 - self.reward_square_size)
-            self.reward_rect = pygame.Rect(x, y, self.reward_square_size, self.reward_square_size)
-
-            # Verificar si la posición de la recompensa está en una zona permitida
-            reward_area = self.collision_mask[y:y+self.reward_square_size, x:x+self.reward_square_size]
-
-            # Verificar si toda el área de la recompensa está dentro de las zonas blancas (permitidas)
-            # Usamos `== 255` porque el blanco es el valor permitido (si la máscara es en blanco y negro)
-            if np.all(reward_area == 255):  # El valor 255 en la máscara indica una zona libre
-                return (x, y)
+        # Genera una posición aleatoria dentro de los límites de la pantalla para la recompensa.
+        x = np.random.randint(100, 1180 - self.reward_square_size)
+        y = np.random.randint(100, 680 - self.reward_square_size)
+        return (x, y)
             
     def step(self, action):
         """
         Realiza un paso en el entorno.
         """
         self.current_step += 1  # Incrementar el contador de pasos
+        # DEBUG: Verifica el tiempo restante
+        print(f"Pasos: {self.current_step}")
 
         # Resta el tiempo de la cuenta regresiva (basado en tiempo real)
         elapsed_time = time.time() - self.start_time
@@ -170,14 +162,6 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica la nueva posición del agente después de la acción
         print(f"Posición del agente después de la acción: {self.agent_position}")
 
-        # Verificar colisión antes de mover
-        if self.check_collision(self.agent_position[0], self.agent_position[1]):
-            reward = -5  # Penalización por colisión con obstáculos
-            print(f"Colisión detectada. Penalización: {reward}")
-
-        else:
-            reward = 0  # Si no hay colisión, no hay penalización
-
         # Rotar el agente lentamente hacia el ángulo objetivo
         angle_diff = (self.target_angle - self.agent_angle) % 360
         if angle_diff > 180:
@@ -192,30 +176,27 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica las posiciones de colisión del agente y la recompensa
         print(f"Posición del agente: {self.agent_position}")
         print(f"Posición de la recompensa: {self.reward_position}")
-
+        
         # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
         if agent_rect.colliderect(reward_rect) and not self.reward_collected:
-            reward += 10  # Sumar una recompensa cuando el agente toca el cuadrado
-            print("¡Recompensa recogida! Recompensa adicional: +10")
-            self.reward_position = self.get_random_reward_position()  # Reubicar la recompensa
-            self.reward_collected = True  # Marcar que la recompensa ha sido recogida
-
-        # Limitar la posición del agente para que no se salga de la pantalla
-        self.agent_position[0] = max(0, min(self.agent_position[0], 1280 - self.agent_width))
-        self.agent_position[1] = max(0, min(self.agent_position[1], 720 - self.agent_height))
-
+            reward = 10
+            self.reward_position = self.get_random_reward_position()
+            self.reward_collected = True
+        else:
+            reward = 0
+        
         # Limitar el estado al rango permitido
         self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
 
         # Verificar si el episodio ha terminado
-        if self.current_step >= self.max_steps:
+        if self.countdown_time == 0:
             self.done = True
-            #truncated = False  # No se truncó el episodio, solo se terminó
+            truncated = False  # No se truncó el episodio, solo se terminó
             print(f"Episodio terminado después de {self.current_step} pasos.")
 
         else:
             self.done = False
-            #truncated = False  # El episodio no se truncó
+            truncated = False  # El episodio no se truncó
 
         # Calcular la recompensa
         #reward = 1.0 if self.state[0] == 10 else -0.1
@@ -224,8 +205,8 @@ class MiEntorno(gym.Env):
         #self.current_score += reward
 
         # Devolver la observación (convertida a float32), la recompensa, el estado de finalización y truncamiento, y un diccionario vacío
-        #return self.state.astype(np.float32), reward, self.done, truncated, {}
-        return self.state.astype(np.float32), reward, self.done, {}
+        return self.state.astype(np.float32), reward, self.done, truncated, {}
+        #return self.state.astype(np.float32), reward, self.done, {}
 
     def render(self, mode="human"):
         """
@@ -248,7 +229,6 @@ class MiEntorno(gym.Env):
 
             # Cargar la imagen
             self.screen.blit(self.background_image, (20, 20))
-            
             # Dibujar el agente con rotación y punto de giro ajustado
             rotated_agent = pygame.transform.rotate(self.agent_image, -self.agent_angle)  # Rotación antihoraria
             # Ajustar el centro del rectángulo del agente para ser el punto de giro
