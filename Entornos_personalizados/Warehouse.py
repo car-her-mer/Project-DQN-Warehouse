@@ -57,7 +57,9 @@ class MiEntorno(gym.Env):
         #self.agent_height = 50  # Alto del agente (si es necesario)
         #self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))  # Redimensionar la imagen
 
-         # Máscara de colisiones (generada previamente)
+        # cargar premio
+        self.reward_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\reward.png").convert_alpha()
+        # Máscara de colisiones (generada previamente)
         #self.collision_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
 
         original_width, original_height = self.agent_image.get_size()
@@ -105,7 +107,7 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica la posición de la recompensa
         print(f"Reiniciando episodio {self.current_episode}. Nueva posición de recompensa: {self.reward_position}")
 
-        self.agent_position = [640, 410]  # Volver al centro
+        self.agent_position = [170, 120]  # Volver al centro
 
         # DEBUG: Verifica la posición inicial del agente
         print(f"Posición inicial del agente: {self.agent_position}")
@@ -238,8 +240,8 @@ class MiEntorno(gym.Env):
             #print(f"Posición del agente: {self.agent_position}")
 
             # Dibujar el cuadrado de recompensa
-            pygame.draw.rect(self.screen, (0, 0, 0), (self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size))
-
+            # pygame.draw.rect(self.screen, (0, 0, 0), (self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size))
+            self.screen.blit(self.reward_image, (self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size))
             # Mostrar el estado (para debug)
             font = pygame.font.Font(None, 36)
             # text = font.render(f"Estado: {self.state[0]}", True, (0, 0, 0))
