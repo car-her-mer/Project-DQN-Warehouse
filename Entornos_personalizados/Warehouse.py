@@ -60,13 +60,23 @@ class MiEntorno(gym.Env):
         # cargar premio
         self.reward_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\reward.png").convert_alpha()
         # Máscara de colisiones (generada previamente)
-        #self.collision_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
+        # Cargar las máscaras (agente y entorno)
+        self.agent_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraAgente.png").convert_alpha()
+        self.environment_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
 
         original_width, original_height = self.agent_image.get_size()
         scale_factor = 0.2  # Ajusta este valor para el tamaño final deseado
         self.agent_width = int(original_width * scale_factor)
         self.agent_height = int(original_height * scale_factor)
         self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))
+        
+        # Redimensionar la máscara del agente
+        self.agent_mask = pygame.transform.scale(self.agent_mask, (self.agent_width, self.agent_height))
+        self.environment_mask = pygame.transform.scale(self.environment_mask, (1280, 820))
+
+        # Convertir máscaras a arrays binarios (True para blanco, False para negro)
+        self.agent_collision_mask = pygame.surfarray.array_alpha(self.agent_mask) > 0
+        self.environment_collision_mask = pygame.surfarray.array_alpha(self.environment_mask) > 0     
 
         # Definir la posición y el tamaño del cuadrado de recompensa
         self.reward_square_size = 30  # Tamaño del cuadrado de recompensa
@@ -113,7 +123,33 @@ class MiEntorno(gym.Env):
         print(f"Posición inicial del agente: {self.agent_position}")
 
         return np.array(self.agent_position, dtype=np.float32), {}
+    
+    def check_collision(self):
+        """
+        Comprueba si el agente colisiona con el entorno utilizando máscaras.
+        """
+        # Obtener la posición del agente en la pantalla
+        x, y = int(self.agent_position[0]), int(self.agent_position[1])
 
+    # Validar que las coordenadas del agente no estén fuera de los límites
+        if (x < 0 or x + self.agent_width > self.environment_collision_mask.shape[1] or
+            y < 0 or y + self.agent_height > self.environment_collision_mask.shape[0]):
+            return True  # Considerar colisión si el agente está fuera de los límites
+
+        # Recortar el área de colisión del entorno en función de la posición del agente
+        agent_mask_area = self.environment_collision_mask[
+            y:y + self.agent_height, 
+            x:x + self.agent_width
+        ]
+
+        # Verificar si las dimensiones coinciden
+        if agent_mask_area.shape != self.agent_collision_mask.shape:
+            print(f"Error: Dimensiones incompatibles entre máscaras: {agent_mask_area.shape} vs {self.agent_collision_mask.shape}")
+            return False
+
+        # Verificar colisión: si hay solapamiento entre las máscaras
+        return np.any(self.agent_collision_mask & agent_mask_area)
+    
     def get_random_reward_position(self):
         # Genera una posición aleatoria dentro de los límites de la pantalla para la recompensa.
         x = np.random.randint(100, 1180 - self.reward_square_size)
@@ -134,13 +170,6 @@ class MiEntorno(gym.Env):
 
         # DEBUG: Verifica el tiempo restante
         print(f"Tiempo restante: {self.countdown_time} segundos")
-
-        # Si el tiempo se acabó, penalizar y reiniciar
-        if self.countdown_time == 0:
-            reward = -10  # Penalización cuando el tiempo se acaba
-            self.done = True  # Marcar el episodio como terminado
-            print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
-            return self.state.astype(np.float32), reward, self.done, True, {}
 
         # Actualizar el estado basado en la acción
         if action == 0:  # Movimiento hacia la izquierda
@@ -164,12 +193,25 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica la nueva posición del agente después de la acción
         print(f"Posición del agente después de la acción: {self.agent_position}")
 
+        # Si el tiempo se acabó, penalizar y reiniciar
+        if self.countdown_time == 0:
+            reward = -10  # Penalización cuando el tiempo se acaba
+            self.done = True  # Marcar el episodio como terminado
+            print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
+            return self.state.astype(np.float32), reward, self.done, True, {}
+
         # Rotar el agente lentamente hacia el ángulo objetivo
         angle_diff = (self.target_angle - self.agent_angle) % 360
         if angle_diff > 180:
             angle_diff -= 360
-        rotation_step = min(self.rotation_speed, abs(angle_diff)) * np.sign(angle_diff)
-        self.agent_angle = (self.agent_angle + rotation_step) % 360
+        #rotation_step = min(self.rotation_speed, abs(angle_diff)) * np.sign(angle_diff)
+        self.agent_angle = (self.agent_angle + self.rotation_speed * np.sign(angle_diff)) % 360
+        
+        if self.check_collision():
+            print("¡Colisión detectada! Reiniciando episodio.")
+            reward = -10
+            self.done = True  # Marcar el episodio como terminado
+            return self.state.astype(np.float32), reward, self.done, True, {}
 
         # Verificar si el agente toca el cuadrado de recompensa
         agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
