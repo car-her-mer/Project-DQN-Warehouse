@@ -12,97 +12,83 @@ class MiEntorno(gym.Env):
     Un entorno personalizado para OpenAI Gym con visualización en Pygame.
     """
     metadata = {
-        'render_modes': ['human'],  # Declarar correctamente el modo de renderizado
-        'render_fps': 30            # Establecer la tasa de fotogramas por segundo (FPS)
+        'render_modes': ['human'],
+        'render_fps': 30
     }
 
     def __init__(self):
         # Inicialización de Pygame
         pygame.init()
 
-        # Inicialización del entorno
-        self.current_score = 0
-        self.current_episode = 0
-        self.state = np.array([5.0])  # Estado inicial
-        self.current_step = 0
-        self.done = False
-        self.max_steps = 100  # Número máximo de pasos en un episodio
+        # Configuración del entorno
+        self.current_score = 0  # Puntuación acumulada del agente
+        self.current_episode = 0  # Número de episodios jugados
+        self.state = np.array([5.0])  # Estado inicial del agente
+        self.current_step = 0  # Contador de pasos
+        self.done = False  # Indicador de finalización del episodio
+        self.max_steps = 100  # Máximo número de pasos por episodio
 
-        # Definir la cuenta regresiva y el tiempo inicial (en segundos o pasos)
-        self.countdown_time = 60  # 1 minuto = 60 segundos  # Por ejemplo, 300 segundos (5 minutos)
+        # Definir la cuenta regresiva y el tiempo inicial (en segundos)
+        self.countdown_time = 60  # Duración máxima del episodio
 
-        # Definir los espacios de observación y acción
+        # Espacios de observación y acción
         self.observation_space = spaces.Box(low=0, high=10, shape=(1,), dtype=np.float32)
         self.action_space = spaces.Discrete(2)  # Dos acciones: 0 (izquierda) o 1 (derecha)
-        
+
         # Crear la ventana de Pygame
-        self.screen = pygame.display.set_mode((1280, 820))  # Tamaño de la ventana
+        self.screen = pygame.display.set_mode((1280, 820))
         pygame.display.set_caption("Warehouse Environment")
 
+        # Cargar imagen de fondo
         self.background_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\fondo.png").convert()
 
-        # Dirección inicial del agente (en grados, 0 = derecha, 90 = abajo, 180 = izquierda, 270 = arriba)
-        self.agent_angle = 0  
-        self.target_angle = 0  # Ángulo objetivo para rotación suave
-        # Velocidad del agente (en píxeles por paso)
-        self.agent_speed = 0.5  # Movimiento más lento, como un robot con ruedas (mayor numero = mayor velocidad y viceversa)
-        self.rotation_speed = 5  # Velocidad de rotación (en grados por frame)
-        
-        # Inicializar la posición del agente (x, y)
-        self.agent_position = [640, 410]  # Centro de la pantalla
+        # Dirección inicial del agente
+        self.agent_angle = 0  # Ángulo de orientación inicial
+        self.target_angle = 0  # Ángulo objetivo para rotaciones
+        self.agent_speed = 0.5  # Velocidad de movimiento del agente
+        self.rotation_speed = 5  # Velocidad de rotación del agente
+
+        # Inicializar la posición del agente
+        self.agent_position = [640, 410]  # Posición inicial en el centro de la ventana
 
         # Cargar y redimensionar la imagen del agente
         self.agent_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\agente.png").convert_alpha()
-        #self.agent_width = 50  # Ancho del agente
-        #self.agent_height = 50  # Alto del agente (si es necesario)
-        #self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))  # Redimensionar la imagen
-
-        # cargar premio
-        self.reward_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\reward.png").convert_alpha()
-        # Máscara de colisiones (generada previamente)
-        # Cargar las máscaras (agente y entorno)
-        self.agent_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraAgente.png").convert_alpha()
-        self.environment_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
-
         original_width, original_height = self.agent_image.get_size()
-        scale_factor = 0.2  # Ajusta este valor para el tamaño final deseado
+        scale_factor = 0.2  # Factor de escalado
         self.agent_width = int(original_width * scale_factor)
         self.agent_height = int(original_height * scale_factor)
         self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))
-        
-        # Redimensionar la máscara del agente
-        self.agent_mask = pygame.transform.scale(self.agent_mask, (self.agent_width, self.agent_height))
-        self.environment_mask = pygame.transform.scale(self.environment_mask, (1280, 820))
 
-        # Convertir máscaras a arrays binarios (True para blanco, False para negro)
-        self.agent_collision_mask = pygame.surfarray.array_alpha(self.agent_mask) > 0
-        self.environment_collision_mask = pygame.surfarray.array_alpha(self.environment_mask) > 0     
+        # Cargar la imagen del premio
+        self.reward_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\reward.png").convert_alpha()
 
         # Definir la posición y el tamaño del cuadrado de recompensa
         self.reward_square_size = 30  # Tamaño del cuadrado de recompensa
-        self.reward_position = [500, 300]  # Posición en el espacio (x, y)
+        self.reward_position = [500, 300]  # Posición inicial del premio
+
+        self.agent_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraAgente.png").convert_alpha()
+        self.environment_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
+
+        self.agent_mask = pygame.transform.scale(self.agent_mask, (self.agent_width, self.agent_height))
 
         # Inicializar el tiempo de inicio del episodio
-        self.start_time = time.time()
+        self.start_time = time.time()  # Registrar el tiempo inicial
 
         # Variable de control para el estado de la ventana
-        self.window_open = True
-    """
-    def check_collision(self, x, y):
-        #Verifica si el agente colisiona con una zona no permitida.
-        agent_rect = pygame.Rect(x, y, self.agent_width, self.agent_height)
-        for px in range(max(0, agent_rect.left), min(self.collision_mask.shape[1], agent_rect.right)):
-            for py in range(max(0, agent_rect.top), min(self.collision_mask.shape[0], agent_rect.bottom)):
-                if self.collision_mask[py, px]:  # Verificar si la posición es colisión
-                    return True
-        return False
-    """
+        self.window_open = True  # Indica si la ventana de Pygame está abierta
+
     def reset(self, seed=None, options=None):
         """
         Reinicia el entorno al estado inicial.
+
+        Returns:
+            state (np.array): Estado inicial del agente.
+            info (dict): Información adicional (vacío en este caso).
         """
         if seed is not None:
             np.random.seed(seed)
+
+        # Restablecer los parámetros iniciales
         self.state = np.array([5.0])  # Resetear el estado
         self.done = False
         self.current_step = 0
@@ -117,48 +103,64 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica la posición de la recompensa
         print(f"Reiniciando episodio {self.current_episode}. Nueva posición de recompensa: {self.reward_position}")
 
-        self.agent_position = [170, 120]  # Volver al centro
+        self.agent_position = [170, 120]  # Volver a la posicion inicial
 
         # DEBUG: Verifica la posición inicial del agente
         print(f"Posición inicial del agente: {self.agent_position}")
 
         return np.array(self.agent_position, dtype=np.float32), {}
-    
+
     def check_collision(self):
         """
-        Comprueba si el agente colisiona con el entorno utilizando máscaras.
+        Verifica si las zonas blancas del agente y el entorno se superponen.
+
+        Si la zona blanca del agente toca la zona blanca del entorno, reinicia el entorno.
         """
-        # Obtener la posición del agente en la pantalla
-        x, y = int(self.agent_position[0]), int(self.agent_position[1])
+        # Crear las máscaras del agente y del entorno usando las imágenes cargadas
+        agent_mask = pygame.mask.from_surface(self.agent_mask)
+        environment_mask = pygame.mask.from_surface(self.environment_mask)
 
-    # Validar que las coordenadas del agente no estén fuera de los límites
-        if (x < 0 or x + self.agent_width > self.environment_collision_mask.shape[1] or
-            y < 0 or y + self.agent_height > self.environment_collision_mask.shape[0]):
-            return True  # Considerar colisión si el agente está fuera de los límites
-
-        # Recortar el área de colisión del entorno en función de la posición del agente
-        agent_mask_area = self.environment_collision_mask[
-            y:y + self.agent_height, 
-            x:x + self.agent_width
-        ]
-
-        # Verificar si las dimensiones coinciden
-        if agent_mask_area.shape != self.agent_collision_mask.shape:
-            print(f"Error: Dimensiones incompatibles entre máscaras: {agent_mask_area.shape} vs {self.agent_collision_mask.shape}")
-            return False
-
-        # Verificar colisión: si hay solapamiento entre las máscaras
-        return np.any(self.agent_collision_mask & agent_mask_area)
-    
+        # Calcular el desplazamiento del agente para que las máscaras se alineen correctamente
+        offset = (self.agent_position[0], self.agent_position[1])
+        print("offset: ", offset)
+        # Verificar la superposición de las zonas blancas
+        overlap = agent_mask.overlap(environment_mask, offset)
+        print("overlap: ", overlap)
+        if overlap:  # Si hay una superposición
+            print("Colisión detectada, reiniciando entorno...")
+            return True
+        return False
     def get_random_reward_position(self):
-        # Genera una posición aleatoria dentro de los límites de la pantalla para la recompensa.
+        """
+        Genera una posición aleatoria dentro de los límites de la pantalla para la recompensa.
+
+        Este método garantiza que el premio aparezca dentro de los límites visibles de la pantalla y 
+        en un lugar diferente cada vez que se llama.
+
+        Returns:
+            tuple: Coordenadas (x, y) de la nueva posición del premio.
+        """
         x = np.random.randint(100, 1180 - self.reward_square_size)
         y = np.random.randint(100, 680 - self.reward_square_size)
         return (x, y)
-            
+
     def step(self, action):
         """
-        Realiza un paso en el entorno.
+        Realiza un paso en el entorno basado en la acción tomada por el agente.
+
+        Args:
+            action (int): Acción elegida por el agente. Puede tomar los valores:
+                - 0: Mover hacia la izquierda.
+                - 1: Mover hacia la derecha.
+                - 2: Mover hacia arriba.
+                - 3: Mover hacia abajo.
+
+        Returns:
+            state (np.array): Nuevo estado del entorno.
+            reward (float): Recompensa obtenida tras realizar la acción.
+            done (bool): Indicador de si el episodio ha terminado.
+            truncated (bool): Indicador de si el episodio fue truncado.
+            info (dict): Información adicional.
         """
         self.current_step += 1  # Incrementar el contador de pasos
         # DEBUG: Verifica el tiempo restante
@@ -171,10 +173,13 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica el tiempo restante
         print(f"Tiempo restante: {self.countdown_time} segundos")
 
+        # Explicación: La cuenta regresiva se reduce con el tiempo transcurrido desde que comenzó el episodio.
+        # Si el tiempo alcanza cero, el episodio termina automáticamente.
+
         # Actualizar el estado basado en la acción
         if action == 0:  # Movimiento hacia la izquierda
             self.state -= 1
-            self.agent_position[0] -= self.agent_speed  # Mover el agente a la izquierda 
+            self.agent_position[0] -= self.agent_speed # Mover el agente a la izquierda 
             self.target_angle = 180  # Establecer ángulo objetivo hacia la izquierda
         elif action == 1:  # Movimiento hacia la derecha
             self.state += 1
@@ -193,43 +198,44 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica la nueva posición del agente después de la acción
         print(f"Posición del agente después de la acción: {self.agent_position}")
 
+        # Rotar el agente lentamente hacia el ángulo objetivo
+        angle_diff = (self.target_angle - self.agent_angle) % 360
+        if angle_diff > 180:
+            angle_diff -= 360
+        self.agent_angle = (self.agent_angle + self.rotation_speed * np.sign(angle_diff)) % 360
+
         # Si el tiempo se acabó, penalizar y reiniciar
         if self.countdown_time == 0:
             reward = -10  # Penalización cuando el tiempo se acaba
             self.done = True  # Marcar el episodio como terminado
             print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
             return self.state.astype(np.float32), reward, self.done, True, {}
-
-        # Rotar el agente lentamente hacia el ángulo objetivo
-        angle_diff = (self.target_angle - self.agent_angle) % 360
-        if angle_diff > 180:
-            angle_diff -= 360
-        #rotation_step = min(self.rotation_speed, abs(angle_diff)) * np.sign(angle_diff)
-        self.agent_angle = (self.agent_angle + self.rotation_speed * np.sign(angle_diff)) % 360
         
+        self.current_step += 1  # Incrementar el contador de pasos
+
+        # Comprobar si hay colisión entre las zonas blancas
         if self.check_collision():
-            print("¡Colisión detectada! Reiniciando episodio.")
-            reward = -10
-            self.done = True  # Marcar el episodio como terminado
-            return self.state.astype(np.float32), reward, self.done, True, {}
+            state, _ = self.reset()
+            return state, -10, True, False, {}  # Penalización por colisión, reiniciando el entorno
 
         # Verificar si el agente toca el cuadrado de recompensa
         agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
         reward_rect = pygame.Rect(self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size)
-
+        
         # DEBUG: Verifica las posiciones de colisión del agente y la recompensa
         print(f"Posición del agente: {self.agent_position}")
         print(f"Posición de la recompensa: {self.reward_position}")
         
         # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
         if agent_rect.colliderect(reward_rect) and not self.reward_collected:
-            reward = 10
-            self.reward_position = self.get_random_reward_position()
-            self.reward_collected = True
+            # El agente recoge la recompensa, aumentando su puntuación y generando un nuevo premio.
+            reward = 10  # Recompensa por recoger el premio
+            self.reward_position = self.get_random_reward_position()  # Mover el premio a una nueva posición
+            self.reward_collected = True  # Marcar la recompensa como recogida
         else:
-            reward = 0
-        
-        # Limitar el estado al rango permitido
+            reward = 0  # Sin recompensa
+
+        # Limitar el estado dentro de los valores válidos
         self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
 
         # Verificar si el episodio ha terminado
@@ -242,72 +248,71 @@ class MiEntorno(gym.Env):
             self.done = False
             truncated = False  # El episodio no se truncó
 
-        # Calcular la recompensa
-        #reward = 1.0 if self.state[0] == 10 else -0.1
-
-        # Actualizar la puntuación (por ejemplo, acumulando recompensas)
-        #self.current_score += reward
-
-        # Devolver la observación (convertida a float32), la recompensa, el estado de finalización y truncamiento, y un diccionario vacío
         return self.state.astype(np.float32), reward, self.done, truncated, {}
-        #return self.state.astype(np.float32), reward, self.done, {}
 
     def render(self, mode="human"):
         """
         Renderiza el entorno en la ventana de Pygame.
+
+        Este método dibuja el fondo, al agente, y la recompensa en sus posiciones actuales. También 
+        muestra información sobre el episodio, como la puntuación acumulada, el número de episodios, 
+        y el tiempo restante. Actualmente, solo soporta el modo 'human'.
+
+        Args:
+            mode (str): Modo de renderizado (solo se admite 'human').
         """
         if mode == 'human':
-            # Manejo de eventos de Pygame (como cerrar la ventana)
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
-                    self.window_open = False  # Marcar la ventana como cerrada
+                    self.window_open = False
                     pygame.quit()
                     return
 
-            # Rellenar la pantalla de gris
-            self.screen.fill((169, 169, 169))  # Color gris (RGB)
-
-            # Aquí puedes agregar tu código de renderizado, como dibujar elementos en la pantalla
-            # Dibujar un segundo rectángulo más pequeño (blanco)
-            # pygame.draw.rect(self.screen, (255, 255, 255), (20, 20, 1240, 645))  # x, y, ancho, alto
-
-            # Cargar la imagen
+            # Dibujar el fondo y el agente
+            self.screen.fill((169, 169, 169))
             self.screen.blit(self.background_image, (20, 20))
-            # Dibujar el agente con rotación y punto de giro ajustado
-            rotated_agent = pygame.transform.rotate(self.agent_image, -self.agent_angle)  # Rotación antihoraria
-            # Ajustar el centro del rectángulo del agente para ser el punto de giro
+            #self.screen.blit(self.environment_mask, (20, 20)) # comprobar la mascara
+
+            # Rotar y dibujar el agente
+            rotated_agent = pygame.transform.rotate(self.agent_image, -self.agent_angle)
+            #rotated_agent = pygame.transform.rotate(self.agent_mask, -self.agent_angle) # comprobar la mascara
             agent_rect = rotated_agent.get_rect(center=(self.agent_position[0], self.agent_position[1]))
-
             self.screen.blit(rotated_agent, agent_rect.topleft)
-            #print(f"Posición del agente: {self.agent_position}")
 
-            # Dibujar el cuadrado de recompensa
-            # pygame.draw.rect(self.screen, (0, 0, 0), (self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size))
+            # Dibujar la recompensa
             self.screen.blit(self.reward_image, (self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size))
-            # Mostrar el estado (para debug)
+
+            # Mostrar información en pantalla
             font = pygame.font.Font(None, 36)
-            # text = font.render(f"Estado: {self.state[0]}", True, (0, 0, 0))
-            # self.screen.blit(text, (50, 50))  # Mostrar texto en la ventana
-
-            # Mostrar la puntuación actual
             score_text = font.render(f"Puntuación: {self.current_score}", True, (0, 0, 0))
-            self.screen.blit(score_text, (40, 680))  # Posición debajo del rectángulo blanco
+            self.screen.blit(score_text, (40, 680))
 
-            # Mostrar el episodio actual
             episode_text = font.render(f"Episodio: {self.current_episode}", True, (0, 0, 0))
-            self.screen.blit(episode_text, (40, 720))  # Posición debajo de la puntuación
+            self.screen.blit(episode_text, (40, 720))
 
-            # Mostrar la cuenta regresiva
             countdown_text = font.render(f"Tiempo restante: {self.countdown_time}", True, (0, 0, 0))
-            self.screen.blit(countdown_text, (10, 10))  # Posición cerca de la puntuación
+            self.screen.blit(countdown_text, (25, 25))
 
-            # Actualizar la pantalla
             pygame.display.flip()
 
     def close(self):
         """
         Cierra el entorno y Pygame.
+
+        Este método imprime información final sobre el último episodio antes de cerrar la ventana.
+        Por ejemplo, si has abierto archivos, conexiones de red o cualquier otro recurso externo,
+        debes asegurarte de liberarlos aquí para evitar fugas de memoria o problemas de rendimiento.
         """
         print(f"Último episodio: {self.current_episode}, Puntuación final: {self.current_score}")
         self.window_open = False
         pygame.quit()
+
+# Ejemplo de uso (en RegistrarEntorno.py está puesto así)
+# env = MiEntorno()
+# state, _ = env.reset()
+# done = False
+# while not done:
+#     action = env.action_space.sample()  # Acción aleatoria
+#     state, reward, done, truncated, info = env.step(action)
+#     env.render()
+# env.close()
