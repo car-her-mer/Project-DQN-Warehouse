@@ -12,8 +12,8 @@ class MiEntorno(gym.Env):
     Un entorno personalizado para OpenAI Gym con visualización en Pygame.
     """
     metadata = {
-        'render_modes': ['human'],
-        'render_fps': 30
+        'render_modes': ['human'], # Declarar correctamente el modo de renderizado
+        'render_fps': 30 # Establecer la tasa de fotogramas por segundo (FPS)
     }
 
     def __init__(self):
@@ -215,6 +215,7 @@ class MiEntorno(gym.Env):
 
         # Comprobar si hay colisión entre las zonas blancas
         if self.check_collision():
+            print("¡Colisión detectada! Reiniciando episodio.")
             state, _ = self.reset()
             return state, -10, True, False, {}  # Penalización por colisión, reiniciando el entorno
 
@@ -264,7 +265,7 @@ class MiEntorno(gym.Env):
         if mode == 'human':
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
-                    self.window_open = False
+                    self.window_open = False # Marcar la ventana como cerrada
                     pygame.quit()
                     return
 
