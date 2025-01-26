@@ -48,15 +48,16 @@ class MiEntorno(gym.Env):
         self.agent_speed = 0.5  # Velocidad de movimiento del agente
         self.rotation_speed = 5  # Velocidad de rotación del agente
 
-        # Inicializar la posición del agente
-        self.agent_position = [640, 410]  # Posición inicial en el centro de la ventana
+        # Inicializar la posición del agente y entorno
+        self.agent_position = [640, 410]  # Posición inicial del agente (puede cambiar dinámicamente)
+        self.environment_position = (0, 0)  # El entorno está fijo en la posición (0, 0)
 
         # Cargar y redimensionar la imagen del agente
         self.agent_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\agente.png").convert_alpha()
         original_width, original_height = self.agent_image.get_size()
         scale_factor = 0.2  # Factor de escalado
-        self.agent_width = int(original_width * scale_factor)
-        self.agent_height = int(original_height * scale_factor)
+        self.agent_width = int(original_width * scale_factor) #57
+        self.agent_height = int(original_height * scale_factor) #67
         self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))
 
         # Cargar la imagen del premio
@@ -106,7 +107,7 @@ class MiEntorno(gym.Env):
         self.agent_position = [170, 120]  # Volver a la posicion inicial
 
         # DEBUG: Verifica la posición inicial del agente
-        print(f"Posición inicial del agente: {self.agent_position}")
+        #print(f"Posición inicial del agente: {self.agent_position}")
 
         return np.array(self.agent_position, dtype=np.float32), {}
 
@@ -116,20 +117,30 @@ class MiEntorno(gym.Env):
 
         Si la zona blanca del agente toca la zona blanca del entorno, reinicia el entorno.
         """
-        # Crear las máscaras del agente y del entorno usando las imágenes cargadas
-        agent_mask = pygame.mask.from_surface(self.agent_mask)
-        environment_mask = pygame.mask.from_surface(self.environment_mask)
 
-        # Calcular el desplazamiento del agente para que las máscaras se alineen correctamente
-        offset = (self.agent_position[0], self.agent_position[1])
-        print("offset: ", offset)
-        # Verificar la superposición de las zonas blancas
-        overlap = agent_mask.overlap(environment_mask, offset)
-        print("overlap: ", overlap)
-        if overlap:  # Si hay una superposición
-            print("Colisión detectada, reiniciando entorno...")
-            return True
-        return False
+        # Crear máscaras del agente y del entorno
+        # Crear máscaras del agente y del entorno
+        agent_mask = pygame.mask.from_surface(self.agent_mask)  # Máscara del agente
+        if not hasattr(self, 'environment_mask_obj'):  # Crear solo una vez la máscara del fondo
+            self.environment_mask_obj = pygame.mask.from_surface(self.environment_mask)
+
+        # Calcular el desplazamiento relativo entre las posiciones
+        offset = (
+            self.agent_position[0] - self.environment_position[0],
+            self.agent_position[1] - self.environment_position[1]
+        )
+
+        # Verificar si hay superposición entre las máscaras
+        collision = self.environment_mask_obj.overlap(agent_mask, offset)
+
+        # DEBUG: Mostrar resultados de la colisión
+        if collision:
+            print(f"Colisión detectada en {collision}")
+        else:
+            print("Sin colisión detectada.")
+
+        return collision is not None
+
     def get_random_reward_position(self):
         """
         Genera una posición aleatoria dentro de los límites de la pantalla para la recompensa.
@@ -140,8 +151,8 @@ class MiEntorno(gym.Env):
         Returns:
             tuple: Coordenadas (x, y) de la nueva posición del premio.
         """
-        x = np.random.randint(100, 1180 - self.reward_square_size)
-        y = np.random.randint(100, 680 - self.reward_square_size)
+        x = np.random.randint(150, 1128 - self.reward_square_size) #zona util
+        y = np.random.randint(89, 598 - self.reward_square_size) #zona util
         return (x, y)
 
     def step(self, action):
@@ -164,52 +175,70 @@ class MiEntorno(gym.Env):
         """
         self.current_step += 1  # Incrementar el contador de pasos
         # DEBUG: Verifica el tiempo restante
-        print(f"Pasos: {self.current_step}")
+        #print(f"Pasos: {self.current_step}")
 
         # Resta el tiempo de la cuenta regresiva (basado en tiempo real)
         elapsed_time = time.time() - self.start_time
         self.countdown_time = max(0, 60 - int(elapsed_time))  # Tiempo restante en segundos
 
         # DEBUG: Verifica el tiempo restante
-        print(f"Tiempo restante: {self.countdown_time} segundos")
+        #print(f"Tiempo restante: {self.countdown_time} segundos")
 
         # Explicación: La cuenta regresiva se reduce con el tiempo transcurrido desde que comenzó el episodio.
         # Si el tiempo alcanza cero, el episodio termina automáticamente.
 
         # Actualizar el estado basado en la acción
+        # np.clip(valor a limitar, valor minimo permitido y que no se mueva fuera de la zona util izquierda
+            #, valor maximo permitido y que no se mueva fuera de la zona util derecha)
+        # Actualizar el estado basado en la acción
         if action == 0:  # Movimiento hacia la izquierda
             self.state -= 1
-            self.agent_position[0] -= self.agent_speed # Mover el agente a la izquierda 
+            self.agent_position[0] -= self.agent_speed  # Mover el agente a la izquierda
+            # Asegurarse de que el borde izquierdo del agente no cruce el borde del entorno
+            self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145)
             self.target_angle = 180  # Establecer ángulo objetivo hacia la izquierda
         elif action == 1:  # Movimiento hacia la derecha
             self.state += 1
-            self.agent_position[0] += self.agent_speed  # Mover el agente a la derecha (menor numero = menor velocidad)
+            self.agent_position[0] += self.agent_speed  # Mover el agente a la derecha
+            # Asegurarse de que el borde derecho del agente no cruce el borde del entorno
+            self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145 - self.agent_width)
             self.target_angle = 0  # Establecer ángulo objetivo hacia la derecha
-        # (Opcional) Si incluyes movimientos arriba y abajo:
         elif action == 2:  # Movimiento hacia arriba
             self.state += 0.5
-            self.agent_position[1] -= self.agent_speed
+            self.agent_position[1] -= self.agent_speed  # Mover el agente hacia arriba
+            # Asegurarse de que el borde superior del agente no cruce el borde del entorno
+            self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617)
             self.target_angle = 270  # Establecer ángulo objetivo hacia arriba
         elif action == 3:  # Movimiento hacia abajo
             self.state -= 0.5
-            self.agent_position[1] += self.agent_speed
+            self.agent_position[1] += self.agent_speed  # Mover el agente hacia abajo
+            # Asegurarse de que el borde inferior del agente no cruce el borde del entorno
+            self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617 - self.agent_height)
             self.target_angle = 90  # Establecer ángulo objetivo hacia abajo
-
+        print("posicion[0]: ", self.agent_position[0])
+        print("posicion[1]: ", self.agent_position[1])
         # DEBUG: Verifica la nueva posición del agente después de la acción
-        print(f"Posición del agente después de la acción: {self.agent_position}")
+        #print(f"Posición del agente después de la acción: {self.agent_position}")
 
         # Rotar el agente lentamente hacia el ángulo objetivo
+        print(f"Ángulo actual: {self.agent_angle}")
+        print(f"Ángulo objetivo: {self.target_angle}")
         angle_diff = (self.target_angle - self.agent_angle) % 360
+        print(f"Diferencia de ángulo (sin ajuste): {angle_diff}")
         if angle_diff > 180:
             angle_diff -= 360
         self.agent_angle = (self.agent_angle + self.rotation_speed * np.sign(angle_diff)) % 360
+
+        print(f"Diferencia de ángulo (ajustada): {angle_diff}")
+        print(f"Ángulo actual: {self.agent_angle} grados, Ángulo objetivo: {self.target_angle} grados")
 
         # Si el tiempo se acabó, penalizar y reiniciar
         if self.countdown_time == 0:
             reward = -10  # Penalización cuando el tiempo se acaba
             self.done = True  # Marcar el episodio como terminado
             print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
-            return self.state.astype(np.float32), reward, self.done, True, {}
+            truncated = True
+            return self.state.astype(np.float32), reward, self.done, truncated, {}
         
         self.current_step += 1  # Incrementar el contador de pasos
 
@@ -224,8 +253,8 @@ class MiEntorno(gym.Env):
         reward_rect = pygame.Rect(self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size)
         
         # DEBUG: Verifica las posiciones de colisión del agente y la recompensa
-        print(f"Posición del agente: {self.agent_position}")
-        print(f"Posición de la recompensa: {self.reward_position}")
+        #print(f"Posición del agente: {self.agent_position}")
+        #print(f"Posición de la recompensa: {self.reward_position}")
         
         # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
         if agent_rect.colliderect(reward_rect) and not self.reward_collected:
@@ -276,6 +305,7 @@ class MiEntorno(gym.Env):
 
             # Rotar y dibujar el agente
             rotated_agent = pygame.transform.rotate(self.agent_image, -self.agent_angle)
+            
             #rotated_agent = pygame.transform.rotate(self.agent_mask, -self.agent_angle) # comprobar la mascara
             agent_rect = rotated_agent.get_rect(center=(self.agent_position[0], self.agent_position[1]))
             self.screen.blit(rotated_agent, agent_rect.topleft)
