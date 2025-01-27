@@ -248,6 +248,15 @@ class MiEntorno(gym.Env):
             self.current_score -= 10
             print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
             truncated = True
+
+            # Al final del episodio, comparar la puntuación actual con la mejor puntuación
+            if self.current_score > self.best_score:
+                self.best_score = self.current_score  # Actualizar la mejor puntuación
+                self.best_episode = self.current_episode  # Actualizar el mejor episodio
+                print(f"¡Nueva mejor puntuación! {self.best_score}")
+            else:
+                print(f"La mejor puntuación sigue siendo: {self.best_score}")
+                
             # Reiniciar el entorno para el siguiente episodio
             state, _ = self.reset()
             return self.state.astype(np.float32), reward, self.done, truncated, {}
