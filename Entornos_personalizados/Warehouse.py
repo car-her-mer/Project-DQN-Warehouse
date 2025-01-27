@@ -345,8 +345,8 @@ class MiEntorno(gym.Env):
 
             # Dibujar el fondo y el agente
             self.screen.fill((169, 169, 169))
-            self.screen.blit(self.background_image, (0, 0))
-            #self.screen.blit(self.environment_mask, (0, 0)) # comprobar la mascara
+            self.screen.blit(self.background_image, (20, 20))
+            #self.screen.blit(self.environment_mask, (20, 20)) # comprobar la mascara
 
             # Rotar y dibujar el agente
             rotated_agent = pygame.transform.rotate(self.agent_image, -self.agent_angle)
@@ -369,7 +369,7 @@ class MiEntorno(gym.Env):
             episode_text = font.render(f"Episodio: {self.current_episode}", True, (0, 0, 0))
             self.screen.blit(episode_text, (40, 720))
 
-            best_episode_text = font.render(f"Mejor episodio: {self.current_episode}", True, (0, 0, 0))
+            best_episode_text = font.render(f"Mejor episodio: {self.best_episode}", True, (0, 0, 0))
             self.screen.blit(best_episode_text, (300, 720))
 
             countdown_text = font.render(f"Tiempo restante: {self.countdown_time}", True, (0, 0, 0))
