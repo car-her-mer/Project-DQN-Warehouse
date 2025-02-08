@@ -25,7 +25,8 @@ class MiEntorno(gym.Env):
         self.best_score = 0  # Variable para la mejor puntuación
         self.current_episode = 0  # Número de episodios jugados
         self.best_episode = 0  # Variable para el mejor episodio
-        self.state = np.array([5.0])  # Estado inicial del agente
+        # self.state = np.array([5.0])  # Estado inicial del agente
+        self.state = np.array([640, 410])  # Un valor dentro de los límites [0,0] y [1280,820]
         self.current_step = 0  # Contador de pasos
         self.done = False  # Indicador de finalización del episodio
         self.max_steps = 100  # Máximo número de pasos por episodio
@@ -34,8 +35,9 @@ class MiEntorno(gym.Env):
         self.countdown_time = 60  # Duración máxima del episodio
 
         # Espacios de observación y acción
-        self.observation_space = spaces.Box(low=0, high=10, shape=(1,), dtype=np.float32)
-        self.action_space = spaces.Discrete(2)  # Dos acciones: 0 (izquierda) o 1 (derecha)
+        # self.observation_space = spaces.Box(low=0, high=10, shape=(1,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=np.array([0, 0]), high=np.array([1280, 820]), dtype=np.float32)
+        self.action_space = spaces.Discrete(4)  # Cuatro acciones acciones: (izquierda, derecha, arriba, abajo)
 
         # Crear la ventana de Pygame
         self.screen = pygame.display.set_mode((1280, 820))
@@ -51,7 +53,7 @@ class MiEntorno(gym.Env):
         self.rotation_speed = 5  # Velocidad de rotación del agente
 
         # Inicializar la posición del agente y entorno
-        self.agent_position = [640, 410]  # Posición inicial del agente (puede cambiar dinámicamente)
+        self.agent_position = [170, 120]  # Posición inicial del agente (puede cambiar dinámicamente)
         self.environment_position = (0, 0)  # El entorno está fijo en la posición (0, 0)
 
         # Cargar y redimensionar la imagen del agente
@@ -74,6 +76,11 @@ class MiEntorno(gym.Env):
 
         self.agent_mask = pygame.transform.scale(self.agent_mask, (self.agent_width, self.agent_height))
 
+        # Crear máscaras del agente y del entorno al inicio
+        self.agent_mask = pygame.mask.from_surface(self.agent_mask)  # Máscara del agente
+        if not hasattr(self, 'environment_mask_obj'):  # Crear solo una vez la máscara del fondo
+            self.environment_mask_obj = pygame.mask.from_surface(self.environment_mask)
+
         # Inicializar el tiempo de inicio del episodio
         self.start_time = time.time()  # Registrar el tiempo inicial
 
@@ -92,7 +99,8 @@ class MiEntorno(gym.Env):
             np.random.seed(seed)
 
         # Restablecer los parámetros iniciales
-        self.state = np.array([5.0])  # Resetear el estado
+        # self.state = np.array([5.0])  # Resetear el estado
+        self.state = np.array([640, 410])
         self.done = False
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
@@ -119,12 +127,11 @@ class MiEntorno(gym.Env):
 
         Si la zona blanca del agente toca la zona blanca del entorno, reinicia el entorno.
         """
-
-        # Crear máscaras del agente y del entorno
-        # Crear máscaras del agente y del entorno
+        #se quita de aquí para que no se genere la mascara todo el rato
+        """# Crear máscaras del agente y del entorno
         agent_mask = pygame.mask.from_surface(self.agent_mask)  # Máscara del agente
         if not hasattr(self, 'environment_mask_obj'):  # Crear solo una vez la máscara del fondo
-            self.environment_mask_obj = pygame.mask.from_surface(self.environment_mask)
+            self.environment_mask_obj = pygame.mask.from_surface(self.environment_mask)"""
 
         # Calcular el desplazamiento relativo entre las posiciones
         offset = (
@@ -133,7 +140,7 @@ class MiEntorno(gym.Env):
         )
 
         # Verificar si hay superposición entre las máscaras
-        collision = self.environment_mask_obj.overlap(agent_mask, offset)
+        collision = self.environment_mask_obj.overlap(self.agent_mask, offset)
 
         # DEBUG: Mostrar resultados de la colisión
         if collision:
@@ -303,15 +310,16 @@ class MiEntorno(gym.Env):
         # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
         if agent_rect.colliderect(reward_rect) and not self.reward_collected:
             # El agente recoge la recompensa, aumentando su puntuación y generando un nuevo premio.
-            reward = 10  # Recompensa por recoger el premio
+            reward = 50  # Recompensa por recoger el premio
             self.reward_position = self.get_random_reward_position()  # Mover el premio a una nueva posición
             self.reward_collected = True  # Marcar la recompensa como recogida
             self.current_score += reward  # Incrementar la puntuación del agente
+            # self.done = True # Episodio finalizado al alcanzar el objetivo
         else:
             # Si el agente ya ha recogido la recompensa, permitirlo nuevamente al salir de la zona
             if not agent_rect.colliderect(reward_rect):
                 self.reward_collected = False
-            reward = 0  # Sin recompensa
+            reward = -0.1  # Pequeña penalización para evitar quedarse quieto
 
         # Limitar el estado dentro de los valores válidos
         self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
@@ -349,7 +357,7 @@ class MiEntorno(gym.Env):
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     self.window_open = False # Marcar la ventana como cerrada
-                    pygame.quit()
+                    # pygame.quit()
                     return
 
             # Dibujar el fondo y el agente
