@@ -26,7 +26,7 @@ class MiEntorno(gym.Env):
         self.current_episode = 0  # Número de episodios jugados
         self.best_episode = 0  # Variable para el mejor episodio
         # self.state = np.array([5.0])  # Estado inicial del agente
-        self.state = np.array([640, 410])  # Un valor dentro de los límites [0,0] y [1280,820]
+        self.state = np.array([640.0, 410.0])  # Un valor dentro de los límites [0,0] y [1280,820]
         self.current_step = 0  # Contador de pasos
         self.done = False  # Indicador de finalización del episodio
         self.max_steps = 100  # Máximo número de pasos por episodio
@@ -100,7 +100,7 @@ class MiEntorno(gym.Env):
 
         # Restablecer los parámetros iniciales
         # self.state = np.array([5.0])  # Resetear el estado
-        self.state = np.array([640, 410])
+        self.state = np.array([640.0, 410.0])
         self.done = False
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
