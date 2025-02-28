@@ -25,6 +25,9 @@ class MiEntorno(gym.Env):
         self.best_score = 0  # Variable para la mejor puntuación
         self.current_episode = 0  # Número de episodios jugados
         self.best_episode = 0  # Variable para el mejor episodio
+        self.current_reward = 0
+        self.best_reward = 0
+
         # self.state = np.array([5.0])  # Estado inicial del agente
         self.state = np.array([640.0, 410.0])  # Un valor dentro de los límites [0,0] y [1280,820]
         self.current_step = 0  # Contador de pasos
@@ -105,6 +108,7 @@ class MiEntorno(gym.Env):
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
         self.current_episode += 1  # Incrementar el episodio
+        self.current_reward = 0
         self.countdown_time = 60
         self.start_time = time.time()  # Reiniciar el tiempo de inicio al reiniciar el entorno
         self.reward_position = self.get_random_reward_position()  # Nueva posición de recompensa
@@ -257,9 +261,10 @@ class MiEntorno(gym.Env):
             truncated = True
 
             # Al final del episodio, comparar la puntuación actual con la mejor puntuación
-            if self.current_score > self.best_score:
+            if self.current_reward > self.best_reward:
                 self.best_score = self.current_score  # Actualizar la mejor puntuación
                 self.best_episode = self.current_episode  # Actualizar el mejor episodio
+                self.best_reward = self.current_reward  # Actualizar el mejor núm. recompensas
                 print(f"¡Nueva mejor puntuación! {self.best_score}")
             else:
                 print(f"La mejor puntuación sigue siendo: {self.best_score}")
@@ -277,6 +282,7 @@ class MiEntorno(gym.Env):
             if self.current_score > self.best_score:
                 self.best_score = self.current_score  # Actualizar la mejor puntuación
                 self.best_episode = self.current_episode  # Actualizar el mejor episodio
+                self.best_reward = self.current_reward  # Actualizar el mejor núm. recompensas
                 print(f"¡Nueva mejor puntuación! {self.best_score}")
             else:
                 print(f"La mejor puntuación sigue siendo: {self.best_score}")
@@ -314,6 +320,7 @@ class MiEntorno(gym.Env):
             self.reward_position = self.get_random_reward_position()  # Mover el premio a una nueva posición
             self.reward_collected = True  # Marcar la recompensa como recogida
             self.current_score += reward  # Incrementar la puntuación del agente
+            self.current_reward += 1
             # self.done = True # Episodio finalizado al alcanzar el objetivo
         else:
             # Si el agente ya ha recogido la recompensa, permitirlo nuevamente al salir de la zona
@@ -330,9 +337,10 @@ class MiEntorno(gym.Env):
             truncated = False  # No se truncó el episodio, solo se terminó
             print(f"Episodio terminado después de {self.current_step} pasos.")
             # Al final del episodio, comparar la puntuación actual con la mejor puntuación
-            if self.current_score > self.best_score:
+            if self.current_reward > self.best_reward:
                 self.best_score = self.current_score  # Actualizar la mejor puntuación
                 self.best_episode = self.current_episode  # Actualizar el mejor episodio
+                self.best_reward = self.current_reward  # Actualizar el mejor núm. recompensas
                 print(f"¡Nueva mejor puntuación! {self.best_score}")
             else:
                 print(f"La mejor puntuación sigue siendo: {self.best_score}")
@@ -377,20 +385,26 @@ class MiEntorno(gym.Env):
             # Mostrar información en pantalla
             font = pygame.font.Font(None, 36)
 
-            score_text = font.render(f"Puntuación: {self.current_score}", True, (0, 0, 0))
-            self.screen.blit(score_text, (40, 680))
-
-            best_score_text = font.render(f"Mejor puntuación: {self.best_score}", True, (0, 0, 0))
-            self.screen.blit(best_score_text, (300, 680))
-
-            episode_text = font.render(f"Episodio: {self.current_episode}", True, (0, 0, 0))
-            self.screen.blit(episode_text, (40, 720))
-
-            best_episode_text = font.render(f"Mejor episodio: {self.best_episode}", True, (0, 0, 0))
-            self.screen.blit(best_episode_text, (300, 720))
-
             countdown_text = font.render(f"Tiempo restante: {self.countdown_time}", True, (0, 0, 0))
             self.screen.blit(countdown_text, (25, 25))
+
+            episode_text = font.render(f"Episodio: {self.current_episode}", True, (0, 0, 0))
+            self.screen.blit(episode_text, (40, 680))
+
+            best_episode_text = font.render(f"Mejor episodio: {self.best_episode}", True, (0, 0, 0))
+            self.screen.blit(best_episode_text, (350, 680))
+
+            reward_text = font.render(f"Núm. recompensas: {self.current_reward}", True, (0, 0, 0))
+            self.screen.blit(reward_text, (40, 720))
+
+            best_reward_text = font.render(f"Mejor núm. recompensas: {self.best_reward}", True, (0, 0, 0))
+            self.screen.blit(best_reward_text, (350, 720))
+
+            score_text = font.render(f"Puntuación: {self.current_score}", True, (0, 0, 0))
+            self.screen.blit(score_text, (40, 760))
+
+            best_score_text = font.render(f"Mejor puntuación: {self.best_score}", True, (0, 0, 0))
+            self.screen.blit(best_score_text, (350, 760))
 
             pygame.display.flip()
 
