@@ -124,8 +124,9 @@ class MiEntorno(gym.Env):
         #print(f"Posición inicial del agente: {self.agent_position}")
 
         print("Estado inicial después del reset:", self.state)  # Agregar impresión aquí
-
-        return np.array(self.state, dtype=np.float32), {}
+        print(f"estado en el agent_position: {self.agent_position}")
+        print(self.agent_position)
+        return np.array([self.agent_position])
 
     def check_collision(self):
         """
@@ -244,15 +245,15 @@ class MiEntorno(gym.Env):
         self.state = np.array(self.agent_position, dtype=np.float32)
 
         # Rotar el agente lentamente hacia el ángulo objetivo
-        print(f"Ángulo actual: {self.agent_angle}")
-        print(f"Ángulo objetivo: {self.target_angle}")
+        #print(f"Ángulo actual: {self.agent_angle}")
+        #print(f"Ángulo objetivo: {self.target_angle}")
         angle_diff = (self.target_angle - self.agent_angle) % 360
-        print(f"Diferencia de ángulo (sin ajuste): {angle_diff}")
+        #print(f"Diferencia de ángulo (sin ajuste): {angle_diff}")
         if angle_diff > 180:
             angle_diff -= 360
         self.agent_angle = (self.agent_angle + self.rotation_speed * np.sign(angle_diff)) % 360
 
-        print(f"Diferencia de ángulo (ajustada): {angle_diff}")
+        #print(f"Diferencia de ángulo (ajustada): {angle_diff}")
         print(f"Ángulo actual: {self.agent_angle} grados, Ángulo objetivo: {self.target_angle} grados")
 
         # Si el tiempo se acabó, penalizar y reiniciar
@@ -274,7 +275,6 @@ class MiEntorno(gym.Env):
                 
             # Reiniciar el entorno para el siguiente episodio
             self.state, _ = self.reset()
-            #self.state = np.array(self.state, dtype=np.float32)
             # Aquí puedes verificar el estado después de aplicar la acción
             print("Estado después de la acción:", self.state)
             return self.state, reward, self.done, truncated, {}
@@ -293,9 +293,8 @@ class MiEntorno(gym.Env):
             else:
                 print(f"La mejor puntuación sigue siendo: {self.best_score}")
             self.current_score -= 10
-            self.state, _ = self.reset()
-            self.state = np.array(self.state, dtype=np.float32)
-            return self.state, -10, True, False, {}  # Penalización por colisión, reiniciando el entorno
+            state, _ = self.reset()
+            return state, -10, True, False, {}  # Penalización por colisión, reiniciando el entorno
 
         # Calcular la distancia después de mover al agente
         reward_direction_x = self.reward_position[0] - self.agent_position[0]
@@ -355,7 +354,8 @@ class MiEntorno(gym.Env):
             self.done = False
             truncated = False  # El episodio no se truncó
 
-        self.state = np.array(self.state, dtype=np.float32)
+        #self.state = np.array(self.state, dtype=np.float32)
+        print(f"estado en el state de step: {self.state}")
         return self.state, reward, self.done, truncated, {}
 
     def render(self, mode="human"):

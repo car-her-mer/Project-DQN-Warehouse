@@ -71,10 +71,6 @@ def train_model(state, action, reward, next_state, done):
 # Bucle principal de entrenamiento
 for episode in range(1000):  # Número de episodios
     state = env.reset()
-    print(f"Contenido de state: {state}")
-    #state = np.concatenate([np.array(item, dtype=np.float32) for item in state])
-    print(f"Tipo de state antes de convertir a tensor: {type(state)}")
-    print(f"Forma de state antes de convertir a tensor: {state.shape}")
     state = np.array(state, dtype=np.float32)  # Convertir tupla a array de numpy
   
     state = np.reshape(state, [1, state_size])
@@ -90,6 +86,9 @@ for episode in range(1000):  # Número de episodios
 
         # Ejecuta la acción
         next_state, reward, done, truncated, info = env.step(action)
+        print(f"Contenido de state: {next_state}")
+        print(f"Tipo de state antes de convertir a tensor: {type(next_state)}")
+        print(f"Forma de state antes de convertir a tensor: {next_state.shape}")
         next_state = np.reshape(next_state, [1, state_size])
 
         # Entrena el modelo
