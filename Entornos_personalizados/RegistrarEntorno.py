@@ -69,7 +69,9 @@ def train_model(state, action, reward, next_state, done):
 
 
 # Bucle principal de entrenamiento
-for episode in range(1000):  # Número de episodios
+episode = 0
+#for episode in range(1000):  # Número de episodios
+while env.window_open:
     state = env.reset()
     state = np.array(state, dtype=np.float32)  # Convertir tupla a array de numpy
   
@@ -77,7 +79,7 @@ for episode in range(1000):  # Número de episodios
     done = False
     total_reward = 0
 
-    while not done:
+    while not done and env.window_open:
         # Elige una acción
         if np.random.rand() <= epsilon:
             action = env.action_space.sample()  # Exploración
@@ -85,6 +87,7 @@ for episode in range(1000):  # Número de episodios
             action = act(state)  # Explotación
 
         # Ejecuta la acción
+        print(env.step(action))
         next_state, reward, done, truncated, info = env.step(action)
         print(f"Contenido de state: {next_state}")
         print(f"Tipo de state antes de convertir a tensor: {type(next_state)}")
@@ -104,6 +107,7 @@ for episode in range(1000):  # Número de episodios
             print(f"Episode {episode+1}: Total reward: {total_reward}")
             if epsilon > epsilon_min:
                 epsilon *= epsilon_decay  # Decae epsilon para reducir la exploración
+
 
 # Cerrar el entorno
 env.close()
