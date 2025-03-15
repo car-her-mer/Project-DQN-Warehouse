@@ -29,7 +29,6 @@ class MiEntorno(gym.Env):
         self.best_reward = 0
 
         # self.state = np.array([5.0])  # Estado inicial del agente
-        self.state = np.array([640.0, 410.0])  # Un valor dentro de los límites [0,0] y [1280,820]
         self.current_step = 0  # Contador de pasos
         self.done = False  # Indicador de finalización del episodio
         self.max_steps = 100  # Máximo número de pasos por episodio
@@ -60,6 +59,8 @@ class MiEntorno(gym.Env):
         self.eje1 = 170
         self.eje2 = 120
         self.agent_position = [self.eje1, self.eje2]  # Posición inicial del agente (puede cambiar dinámicamente)
+        #self.state = np.array([640.0, 410.0])  # Un valor dentro de los límites [0,0] y [1280,820]
+        self.state = self.agent_position  # Un valor dentro de los límites [0,0] y [1280,820]
         print(f"Posición del agente al init: {self.agent_position}")
         self.environment_position = (0, 0)  # El entorno está fijo en la posición (0, 0)
 
@@ -106,8 +107,10 @@ class MiEntorno(gym.Env):
             np.random.seed(seed)
 
         # Restablecer los parámetros iniciales
-        # self.state = np.array([5.0])  # Resetear el estado
-        self.state = np.array([640.0, 410.0])
+        # Restablecer la posición exacta del agente
+        #self.agent_position = np.array([self.eje1, self.eje2])  # Volver a la posicion inicial
+        print(f"Posición del agente en reset: {self.agent_position}")
+        self.state = self.agent_position
         self.done = False
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
@@ -123,12 +126,6 @@ class MiEntorno(gym.Env):
 
         # DEBUG: Verifica la posición de la recompensa
         print(f"Reiniciando episodio {self.current_episode}. Nueva posición de recompensa: {self.reward_position}")
-
-        # Restablecer la posición exacta del agente
-        #self.agent_position = [self.eje1, self.eje2]  # Restablecer la posición al valor original
-
-        #self.agent_position = np.array([self.eje1, self.eje2])  # Volver a la posicion inicial
-        print(f"Posición del agente en reset: {self.agent_position}")
 
         print("Estado inicial después del reset:", self.state)  # Agregar impresión aquí
         return self.state
@@ -196,7 +193,6 @@ class MiEntorno(gym.Env):
             truncated (bool): Indicador de si el episodio fue truncado.
             info (dict): Información adicional.
         """
-        self.current_step += 1  # Incrementar el contador de pasos
         # DEBUG: Verifica el tiempo restante
         #print(f"Pasos: {self.current_step}")
 
@@ -211,41 +207,41 @@ class MiEntorno(gym.Env):
         # Calcular la distancia del agente a la recompensa antes de moverlo
         distance_before = np.sqrt(reward_direction_x**2 + reward_direction_y**2)
 
-        # DEBUG: Verifica el tiempo restante
-        #print(f"Tiempo restante: {self.countdown_time} segundos")
-
-        # Explicación: La cuenta regresiva se reduce con el tiempo transcurrido desde que comenzó el episodio.
-        # Si el tiempo alcanza cero, el episodio termina automáticamente.
-
         # Actualizar el estado basado en la acción
         # np.clip(valor a limitar, valor minimo permitido y que no se mueva fuera de la zona util izquierda
             #, valor maximo permitido y que no se mueva fuera de la zona util derecha)
         # Actualizar el estado basado en la acción
-        if action == 0:  # Movimiento hacia la izquierda
-            #self.state -= 1
-            self.agent_position[0] -= self.agent_speed  # Mover el agente a la izquierda
-            # Asegurarse de que el borde izquierdo del agente no cruce el borde del entorno
-            self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145)
-            self.target_angle = 180  # Establecer ángulo objetivo hacia la izquierda
-        elif action == 1:  # Movimiento hacia la derecha
-            #self.state += 1
-            self.agent_position[0] += self.agent_speed  # Mover el agente a la derecha
-            # Asegurarse de que el borde derecho del agente no cruce el borde del entorno
-            self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145 - self.agent_width)
-            self.target_angle = 0  # Establecer ángulo objetivo hacia la derecha
-        elif action == 2:  # Movimiento hacia arriba
-            #self.state += 0.5
-            self.agent_position[1] -= self.agent_speed  # Mover el agente hacia arriba
-            # Asegurarse de que el borde superior del agente no cruce el borde del entorno
-            self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617)
-            self.target_angle = 270  # Establecer ángulo objetivo hacia arriba
-        elif action == 3:  # Movimiento hacia abajo
-            #self.state -= 0.5
-            self.agent_position[1] += self.agent_speed  # Mover el agente hacia abajo
-            # Asegurarse de que el borde inferior del agente no cruce el borde del entorno
-            self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617 - self.agent_height)
-            self.target_angle = 90  # Establecer ángulo objetivo hacia abajo
-        print(f"Posición del agente en step: {self.agent_position}")
+        if not self.episode_restarted:
+            self.current_step += 1  # Solo incrementar si el episodio no ha sido reiniciado
+            if action == 0:  # Movimiento hacia la izquierda
+                #self.state -= 1
+                self.agent_position[0] -= self.agent_speed  # Mover el agente a la izquierda
+                # Asegurarse de que el borde izquierdo del agente no cruce el borde del entorno
+                self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145)
+                self.target_angle = 180  # Establecer ángulo objetivo hacia la izquierda
+            elif action == 1:  # Movimiento hacia la derecha
+                #self.state += 1
+                self.agent_position[0] += self.agent_speed  # Mover el agente a la derecha
+                # Asegurarse de que el borde derecho del agente no cruce el borde del entorno
+                self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145 - self.agent_width)
+                self.target_angle = 0  # Establecer ángulo objetivo hacia la derecha
+            elif action == 2:  # Movimiento hacia arriba
+                #self.state += 0.5
+                self.agent_position[1] -= self.agent_speed  # Mover el agente hacia arriba
+                # Asegurarse de que el borde superior del agente no cruce el borde del entorno
+                self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617)
+                self.target_angle = 270  # Establecer ángulo objetivo hacia arriba
+            elif action == 3:  # Movimiento hacia abajo
+                #self.state -= 0.5
+                self.agent_position[1] += self.agent_speed  # Mover el agente hacia abajo
+                # Asegurarse de que el borde inferior del agente no cruce el borde del entorno
+                self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617 - self.agent_height)
+                self.target_angle = 90  # Establecer ángulo objetivo hacia abajo
+            print(f"Posición del agente en step: {self.agent_position}")
+        else:
+            self.current_step += 1  # Incrementar el contador de pasos
+            self.episode_restarted = False
+            self.agent_position = np.array([self.eje1, self.eje2])  # Volver a la posicion inicial
 
         # Actualizar el estado según la posición del agente
         #self.state = self.agent_position
@@ -281,15 +277,13 @@ class MiEntorno(gym.Env):
                 
             self.episode_restarted = True  # El episodio ha terminado
             # Reiniciar el entorno para el siguiente episodio
-            self.state = self.reset()
+            self.state, _ = self.reset()
             # Aquí puedes verificar el estado después de aplicar la acción
             print("Estado después de la acción:", self.state)
         else:
             self.done = False
             truncated = False  # El episodio no se truncó
             self.episode_restarted = False  # El episodio no ha terminado
-
-        self.current_step += 1  # Incrementar el contador de pasos
 
         # Comprobar si hay colisión entre las zonas blancas
         if self.check_collision():
@@ -327,9 +321,15 @@ class MiEntorno(gym.Env):
             reward = 0  # El agente no cambia su distancia al premio
         
         # Verificar si el agente toca el cuadrado de recompensa
-        agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
+        #agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
         reward_rect = pygame.Rect(self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size)
-        
+        agent_rect = pygame.Rect(
+        self.agent_position[0] - self.agent_width // 2,
+        self.agent_position[1] - self.agent_height // 2,
+        self.agent_width,
+        self.agent_height
+    )
+
         # DEBUG: Verifica las posiciones de colisión del agente y la recompensa
         #print(f"Posición del agente: {self.agent_position}")
         #print(f"Posición de la recompensa: {self.reward_position}")
@@ -351,7 +351,7 @@ class MiEntorno(gym.Env):
         # Limitar el estado dentro de los valores válidos
         self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
 
-        #self.state = np.array(self.state, dtype=np.float32)
+        self.state = np.array(self.agent_position, dtype=np.float32)
         print(f"estado en el state de step: {self.state}")
         return self.state, reward, self.done, truncated, {}
 
@@ -381,13 +381,7 @@ class MiEntorno(gym.Env):
             # Rotar y dibujar el agente
             rotated_agent = pygame.transform.rotate(self.agent_image, -self.agent_angle)
             #rotated_agent = pygame.transform.rotate(self.agent_mask, -self.agent_angle)
-            
-            # Verificar si el episodio ha sido reiniciado
-            if self.episode_restarted:
-                agent_rect = rotated_agent.get_rect(center=(self.eje1, self.eje2))  # Si se ha reiniciado el episodio
-            else:
-                agent_rect = rotated_agent.get_rect(center=(self.agent_position[0], self.agent_position[1]))  # Si no se ha reiniciado
-
+            agent_rect = rotated_agent.get_rect(center=(self.agent_position[0], self.agent_position[1])) 
             
             self.screen.blit(rotated_agent, agent_rect.topleft)
 
