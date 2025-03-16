@@ -89,9 +89,9 @@ while env.window_open:
         # Ejecuta la acción
         print(env.step(action))
         next_state, reward, done, truncated, info = env.step(action)
-        print(f"Contenido de state: {next_state}")
-        print(f"Tipo de state antes de convertir a tensor: {type(next_state)}")
-        print(f"Forma de state antes de convertir a tensor: {next_state.shape}")
+        #print(f"Contenido de state: {next_state}")
+        #print(f"Tipo de state antes de convertir a tensor: {type(next_state)}")
+        #print(f"Forma de state antes de convertir a tensor: {next_state.shape}")
         next_state = np.reshape(next_state, [1, state_size])
 
         # Entrena el modelo
@@ -104,7 +104,7 @@ while env.window_open:
         env.render(mode='human')
 
         if done:
-            print(f"Episode {episode+1}: Total reward: {total_reward}")
+            #print(f"Episode {episode+1}: Total reward: {total_reward}")
             if epsilon > epsilon_min:
                 epsilon *= epsilon_decay  # Decae epsilon para reducir la exploración
 
