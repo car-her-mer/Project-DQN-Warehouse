@@ -126,7 +126,7 @@ class MiEntorno(gym.Env):
         # DEBUG: Verifica la posición de la recompensa
         #print(f"Reiniciando episodio {self.current_episode}. Nueva posición de recompensa: {self.reward_position}")
 
-        #print("Estado inicial después del reset:", self.state)  # Agregar impresión aquí
+        print("posicion inicial en del reset:", self.agent_position)  # Agregar impresión aquí
         return self.state
 
     def check_collision(self):
@@ -217,13 +217,16 @@ class MiEntorno(gym.Env):
                 #self.state -= 1
                 self.agent_position[0] -= self.agent_speed  # Mover el agente a la izquierda
                 # Asegurarse de que el borde izquierdo del agente no cruce el borde del entorno
+                print("accion 0, posicion antes np.clip: ",self.agent_position[0])
                 self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145)
+                print("accion 0, posicion despues: ",self.agent_position[0])
                 self.target_angle = 180  # Establecer ángulo objetivo hacia la izquierda
             elif action == 1:  # Movimiento hacia la derecha
                 #self.state += 1
                 self.agent_position[0] += self.agent_speed  # Mover el agente a la derecha
                 # Asegurarse de que el borde derecho del agente no cruce el borde del entorno
                 self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145 - self.agent_width)
+                print("accion 1, posicion: ",self.agent_position[0])
                 self.target_angle = 0  # Establecer ángulo objetivo hacia la derecha
             elif action == 2:  # Movimiento hacia arriba
                 #self.state += 0.5
