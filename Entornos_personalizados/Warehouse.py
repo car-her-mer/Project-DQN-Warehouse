@@ -125,7 +125,7 @@ class MiEntorno(gym.Env):
         self.episode_restarted = True  # El episodio acaba de reiniciarse
 
         # DEBUG: Verifica la posición de la recompensa
-        print(f"Reiniciando episodio {self.current_episode}. Nueva posición de recompensa: {self.reward_position}")
+        #print(f"Reiniciando episodio {self.current_episode}. Nueva posición de recompensa: {self.reward_position}")
 
         print("Estado inicial después del reset:", self.state)  # Agregar impresión aquí
         return self.state
@@ -154,8 +154,8 @@ class MiEntorno(gym.Env):
         # DEBUG: Mostrar resultados de la colisión
         if collision:
             print(f"Colisión detectada en {collision}")
-        else:
-            print("Sin colisión detectada.")
+        """else:
+            print("Sin colisión detectada.")"""
 
         print(f"Posición del agente en collision: {self.agent_position}")
 
@@ -237,10 +237,10 @@ class MiEntorno(gym.Env):
                 # Asegurarse de que el borde inferior del agente no cruce el borde del entorno
                 self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617 - self.agent_height)
                 self.target_angle = 90  # Establecer ángulo objetivo hacia abajo
-            print(f"Posición del agente en step: {self.agent_position}")
+            print(f"Posición del agente durante step: {self.agent_position}")
         else:
             self.current_step += 1  # Incrementar el contador de pasos
-            self.episode_restarted = False
+            self.episode_restarted = True
             self.agent_position = np.array([self.eje1, self.eje2])  # Volver a la posicion inicial
 
         # Actualizar el estado según la posición del agente
@@ -256,15 +256,20 @@ class MiEntorno(gym.Env):
         self.agent_angle = (self.agent_angle + self.rotation_speed * np.sign(angle_diff)) % 360
 
         #print(f"Diferencia de ángulo (ajustada): {angle_diff}")
-        print(f"Ángulo actual: {self.agent_angle} grados, Ángulo objetivo: {self.target_angle} grados")
+        #print(f"Ángulo actual: {self.agent_angle} grados, Ángulo objetivo: {self.target_angle} grados")
 
         # Si el tiempo se acabó, penalizar y reiniciar
-        if self.countdown_time == 0:
+        if self.countdown_time == 0 or self.check_collision():
             reward = -10  # Penalización cuando el tiempo se acaba
             self.done = True  # Marcar el episodio como terminado
             self.current_score -= 10
-            print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
             truncated = True
+            self.episode_restarted = True  # El episodio ha terminado
+
+            if self.check_collision():
+                print("¡Colisión detectada! Reiniciando episodio.")
+            else:
+                print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
 
             # Al final del episodio, comparar la puntuación actual con la mejor puntuación
             if self.current_reward > self.best_reward:
@@ -272,88 +277,69 @@ class MiEntorno(gym.Env):
                 self.best_episode = self.current_episode  # Actualizar el mejor episodio
                 self.best_reward = self.current_reward  # Actualizar el mejor núm. recompensas
                 print(f"¡Nueva mejor puntuación! {self.best_score}")
-            else:
-                print(f"La mejor puntuación sigue siendo: {self.best_score}")
+            """else:
+                print(f"La mejor puntuación sigue siendo: {self.best_score}")"""
                 
-            self.episode_restarted = True  # El episodio ha terminado
-            # Reiniciar el entorno para el siguiente episodio
-            self.state, _ = self.reset()
             # Aquí puedes verificar el estado después de aplicar la acción
             print("Estado después de la acción:", self.state)
+            # Reiniciar el entorno para el siguiente episodio
+            self.state, _ = self.reset()
+            return self.state, reward, self.done, truncated, {}  
         else:
             self.done = False
             truncated = False  # El episodio no se truncó
             self.episode_restarted = False  # El episodio no ha terminado
 
-        # Comprobar si hay colisión entre las zonas blancas
-        if self.check_collision():
-            print("¡Colisión detectada! Reiniciando episodio.")
-            # Al final del episodio, comparar la puntuación actual con la mejor puntuación
-            if self.current_score > self.best_score:
-                self.best_score = self.current_score  # Actualizar la mejor puntuación
-                self.best_episode = self.current_episode  # Actualizar el mejor episodio
-                self.best_reward = self.current_reward  # Actualizar el mejor núm. recompensas
-                print(f"¡Nueva mejor puntuación! {self.best_score}")
+            # Calcular la distancia después de mover al agente
+            reward_direction_x = self.reward_position[0] - self.agent_position[0]
+            reward_direction_y = self.reward_position[1] - self.agent_position[1]
+            distance_after = np.sqrt(reward_direction_x**2 + reward_direction_y**2) 
+
+            # Evaluar si el agente se acerca o se aleja de la recompensa
+            if distance_after < distance_before:
+                reward = 1  # El agente se acerca al premio
+                self.current_score += 1
+            elif distance_after > distance_before:
+                reward = -1  # El agente se aleja del premio
+                self.current_score -= 1
             else:
-                print(f"La mejor puntuación sigue siendo: {self.best_score}")
-            self.current_score -= 10
-            self.episode_restarted = True  # El episodio ha terminado
-            state = self.reset()
-            return state, -10, True, True, {}  # Penalización por colisión, reiniciando el entorno
-        else:
-            self.done = False
-            truncated = False  # El episodio no se truncó
-            self.episode_restarted = False  # El episodio no ha terminado
+                reward = 0  # El agente no cambia su distancia al premio
+            
+            # Verificar si el agente toca el cuadrado de recompensa
+            #agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
+            reward_rect = pygame.Rect(self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size)
+            agent_rect = pygame.Rect(
+            self.agent_position[0] - self.agent_width // 2,
+            self.agent_position[1] - self.agent_height // 2,
+            self.agent_width,
+            self.agent_height
+            )
 
-        # Calcular la distancia después de mover al agente
-        reward_direction_x = self.reward_position[0] - self.agent_position[0]
-        reward_direction_y = self.reward_position[1] - self.agent_position[1]
-        distance_after = np.sqrt(reward_direction_x**2 + reward_direction_y**2) 
+            # DEBUG: Verifica las posiciones de colisión del agente y la recompensa
+            #print(f"Posición del agente: {self.agent_position}")
+            #print(f"Posición de la recompensa: {self.reward_position}")
+            
+            # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
+            if agent_rect.colliderect(reward_rect) and not self.reward_collected:
+                # El agente recoge la recompensa, aumentando su puntuación y generando un nuevo premio.
+                reward = 50  # Recompensa por recoger el premio
+                self.reward_position = self.get_random_reward_position()  # Mover el premio a una nueva posición
+                self.reward_collected = True  # Marcar la recompensa como recogida
+                self.current_score += reward  # Incrementar la puntuación del agente
+                self.current_reward += 1
+            else:
+                # Si el agente ya ha recogido la recompensa, permitirlo nuevamente al salir de la zona
+                if not agent_rect.colliderect(reward_rect):
+                    self.reward_collected = False
+                reward = -0.1  # Pequeña penalización para evitar quedarse quieto
 
-        # Evaluar si el agente se acerca o se aleja de la recompensa
-        if distance_after < distance_before:
-            reward = 1  # El agente se acerca al premio
-            self.current_score += 1
-        elif distance_after > distance_before:
-            reward = -1  # El agente se aleja del premio
-            self.current_score -= 1
-        else:
-            reward = 0  # El agente no cambia su distancia al premio
-        
-        # Verificar si el agente toca el cuadrado de recompensa
-        #agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
-        reward_rect = pygame.Rect(self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size)
-        agent_rect = pygame.Rect(
-        self.agent_position[0] - self.agent_width // 2,
-        self.agent_position[1] - self.agent_height // 2,
-        self.agent_width,
-        self.agent_height
-    )
+            # Limitar el estado dentro de los valores válidos
+            self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
 
-        # DEBUG: Verifica las posiciones de colisión del agente y la recompensa
-        #print(f"Posición del agente: {self.agent_position}")
-        #print(f"Posición de la recompensa: {self.reward_position}")
-        
-        # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
-        if agent_rect.colliderect(reward_rect) and not self.reward_collected:
-            # El agente recoge la recompensa, aumentando su puntuación y generando un nuevo premio.
-            reward = 50  # Recompensa por recoger el premio
-            self.reward_position = self.get_random_reward_position()  # Mover el premio a una nueva posición
-            self.reward_collected = True  # Marcar la recompensa como recogida
-            self.current_score += reward  # Incrementar la puntuación del agente
-            self.current_reward += 1
-        else:
-            # Si el agente ya ha recogido la recompensa, permitirlo nuevamente al salir de la zona
-            if not agent_rect.colliderect(reward_rect):
-                self.reward_collected = False
-            reward = -0.1  # Pequeña penalización para evitar quedarse quieto
-
-        # Limitar el estado dentro de los valores válidos
-        self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
-
-        self.state = np.array(self.agent_position, dtype=np.float32)
-        print(f"estado en el state de step: {self.state}")
-        return self.state, reward, self.done, truncated, {}
+            self.state = np.array(self.agent_position, dtype=np.float32)
+            print(f"estado en el state de step: {self.state}")
+            
+            return self.state, reward, self.done, truncated, {}
 
     def render(self, mode="human"):
         """
