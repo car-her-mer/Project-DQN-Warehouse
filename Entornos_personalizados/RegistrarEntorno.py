@@ -7,6 +7,8 @@ import tensorflow as tf
 from keras import layers
 from gym.envs.registration import register
 import matplotlib.pyplot as plt  # Importar Matplotlib
+import threading
+import time
 
 # Registrar el entorno personalizado
 register(
@@ -56,6 +58,7 @@ def train_model(state, action, reward, next_state, done):
     target = reward
     if not done:
         next_state = np.array(next_state, dtype=np.float32)  # Convertir tupla a array de numpy
+        print(f"train {next_state}")
         next_state = np.reshape(next_state, [1, state_size])
         target += gamma * np.max(model(next_state)[0])
 
@@ -71,89 +74,92 @@ def train_model(state, action, reward, next_state, done):
 
 # Bucle principal de entrenamiento
 episode = 0
+
+# Crear el gráfico de manera interactiva
+plt.ion()  # Activar modo interactivo
+fig, ax = plt.subplots()
+line, = ax.plot([], [], label="Puntuación Total")
+ax.set_xlabel('Episodio')
+ax.set_ylabel('Puntuación Total')
+ax.set_title('Progreso del Agente - Puntuación por Episodio')
+
 # Lista para almacenar recompensas por episodio
 episode_rewards = []
 
-#for episode in range(1000):  # Número de episodios
-while env.window_open:
+while env.window_open:  # Se ejecuta mientras la ventana del entorno esté abierta
     state = env.reset()
-    state = np.array(state, dtype=np.float32)  # Convertir tupla a array de numpy
-  
+    state = np.array(state, dtype=np.float32)
     state = np.reshape(state, [1, state_size])
     done = False
     truncated = False
     total_reward = 0
 
-    while (not done or not truncated) and env.window_open:
-        # Elige una acción
+    while  env.window_open:  # Salir cuando el episodio termine
         if np.random.rand() <= epsilon:
             action = env.action_space.sample()  # Exploración
         else:
             action = act(state)  # Explotación
 
-        # Ejecuta la acción
-        print(env.step(action))
         next_state, reward, done, truncated, info = env.step(action)
-        print(f"{done},{truncated}")
-        print(f"Contenido de state: {next_state}")
-        print(f"Tipo de state antes de convertir a tensor: {type(next_state)}")
-        print(f"Forma de state antes de convertir a tensor: {next_state.shape}")
-        next_state = np.reshape(next_state, [1, state_size])
 
-        # Si la recompensa no es cero, agregarla al total
-        if reward != 0:
-            print(f"Recompensa en el paso: {reward}")
-
-        # Entrena el modelo
+        # Entrenamiento del modelo
         train_model(state, action, reward, next_state, done)
 
         state = next_state
         total_reward += reward
 
-        # Llamada a render para mostrar el entorno visualmente
-        env.render(mode='human')
+        # Actualización del gráfico
+        if len(episode_rewards) >= 0:
+            line.set_xdata(np.arange(len(episode_rewards)))
+            line.set_ydata(episode_rewards)
+            ax.relim()
+            ax.autoscale_view(True, True, True)
+            plt.pause(0.01)  # Hacer una pausa breve para actualizar el gráfico
+
+        env.render(mode='human')  # Visualizar el entorno
 
         if done or truncated:
-            # Almacena la recompensa total por episodio
             episode_rewards.append(total_reward)
-            print(f"Episodio {episode}: Recompensa total = {total_reward}")  # Imprime recompensa del episodio
+            print(f"Episodio: {episode} Recompensa total = {episode_rewards}")
             if epsilon > epsilon_min:
-                epsilon *= epsilon_decay  # Decae epsilon para reducir la exploración
-            # Asegúrate de incrementar el número de episodios
+                epsilon *= epsilon_decay
             episode += 1
+            break
 
-# Cerrar el entorno
-env.close()
+if not env.window_open:
+    episode_rewards.append(total_reward)
+    print(f"Episodio: {episode} Recompensa total = {episode_rewards}")
 
-# Graficar las recompensas por episodio
-plt.plot(episode_rewards)  # Graficar las recompensas por episodio
-plt.xlabel('Episodio')
-plt.ylabel('Recompensa Total')
-plt.title('Progreso del Agente - Recompensa por Episodio')
+
+# Desactivar el modo interactivo y mostrar el gráfico final
+plt.ioff()
+plt.close()  # Cerrar el gráfico de manera adecuada
 plt.show()
+
+env.close()  # Cerrar el entorno después de todos los episodios
 
 # Metodo basado en exploración aleatoria, no aprende ni se optimiza
 """i_episode = 0
-# Número de episodios que quieres ejecutar
-while env.window_open:
-    state = env.reset()  # Reiniciar el entorno
-    done = False
+    # Número de episodios que quieres ejecutar
+    while env.window_open:
+        state = env.reset()  # Reiniciar el entorno
+        done = False
 
-    while not done and env.window_open:
-        # Tomar una acción aleatoria
-        action = env.action_space.sample()
+        while not done and env.window_open:
+            # Tomar una acción aleatoria
+            action = env.action_space.sample()
 
-        # Realizar el paso en el entorno
-        state, reward, done, truncated, info = env.step(action)
-        #state, reward, done, info = env.step(action)
+            # Realizar el paso en el entorno
+            state, reward, done, truncated, info = env.step(action)
+            #state, reward, done, info = env.step(action)
 
-        # Llamada a render para mostrar el entorno visualmente
-        env.render(mode='human')
+            # Llamada a render para mostrar el entorno visualmente
+            env.render(mode='human')
 
-        if done:
-            i_episode += 1
-            print(f"Episodio: {i_episode}")
-            break
-        
-# Cerrar el entorno al final
-env.close()"""
+            if done:
+                i_episode += 1
+                print(f"Episodio: {i_episode}")
+                break
+            
+    # Cerrar el entorno al final
+    env.close()"""

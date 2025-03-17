@@ -263,7 +263,9 @@ class MiEntorno(gym.Env):
                 self.state, _ = self.reset()
 
             self.current_episode += 1    # Incrementar el episodio
-
+            
+            # Limitar el estado dentro de los valores válidos
+            self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
             return self.state, reward, self.done, truncated, {}  
         else:
             self.done = False
