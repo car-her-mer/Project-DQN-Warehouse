@@ -6,6 +6,7 @@ import numpy as np
 import tensorflow as tf
 from keras import layers
 from gym.envs.registration import register
+import matplotlib.pyplot as plt  # Importar Matplotlib
 
 # Registrar el entorno personalizado
 register(
@@ -70,6 +71,9 @@ def train_model(state, action, reward, next_state, done):
 
 # Bucle principal de entrenamiento
 episode = 0
+# Lista para almacenar recompensas por episodio
+episode_rewards = []
+
 #for episode in range(1000):  # Número de episodios
 while env.window_open:
     state = env.reset()
@@ -77,9 +81,10 @@ while env.window_open:
   
     state = np.reshape(state, [1, state_size])
     done = False
+    truncated = False
     total_reward = 0
 
-    while not done and env.window_open:
+    while (not done or not truncated) and env.window_open:
         # Elige una acción
         if np.random.rand() <= epsilon:
             action = env.action_space.sample()  # Exploración
@@ -89,10 +94,15 @@ while env.window_open:
         # Ejecuta la acción
         print(env.step(action))
         next_state, reward, done, truncated, info = env.step(action)
-        #print(f"Contenido de state: {next_state}")
-        #print(f"Tipo de state antes de convertir a tensor: {type(next_state)}")
-        #print(f"Forma de state antes de convertir a tensor: {next_state.shape}")
+        print(f"{done},{truncated}")
+        print(f"Contenido de state: {next_state}")
+        print(f"Tipo de state antes de convertir a tensor: {type(next_state)}")
+        print(f"Forma de state antes de convertir a tensor: {next_state.shape}")
         next_state = np.reshape(next_state, [1, state_size])
+
+        # Si la recompensa no es cero, agregarla al total
+        if reward != 0:
+            print(f"Recompensa en el paso: {reward}")
 
         # Entrena el modelo
         train_model(state, action, reward, next_state, done)
@@ -103,14 +113,24 @@ while env.window_open:
         # Llamada a render para mostrar el entorno visualmente
         env.render(mode='human')
 
-        if done:
-            #print(f"Episode {episode+1}: Total reward: {total_reward}")
+        if done or truncated:
+            # Almacena la recompensa total por episodio
+            episode_rewards.append(total_reward)
+            print(f"Episodio {episode}: Recompensa total = {total_reward}")  # Imprime recompensa del episodio
             if epsilon > epsilon_min:
                 epsilon *= epsilon_decay  # Decae epsilon para reducir la exploración
-
+            # Asegúrate de incrementar el número de episodios
+            episode += 1
 
 # Cerrar el entorno
 env.close()
+
+# Graficar las recompensas por episodio
+plt.plot(episode_rewards)  # Graficar las recompensas por episodio
+plt.xlabel('Episodio')
+plt.ylabel('Recompensa Total')
+plt.title('Progreso del Agente - Recompensa por Episodio')
+plt.show()
 
 # Metodo basado en exploración aleatoria, no aprende ni se optimiza
 """i_episode = 0

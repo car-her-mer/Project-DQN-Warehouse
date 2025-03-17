@@ -56,8 +56,8 @@ class MiEntorno(gym.Env):
         self.rotation_speed = 5  # Velocidad de rotación del agente
 
         # Inicializar la posición del agente y entorno
-        self.eje1 = 150
-        self.eje2 = 120
+        self.eje1 = 170 
+        self.eje2 = 120 
         self.agent_position = [self.eje1, self.eje2]  # Posición inicial del agente (puede cambiar dinámicamente)
         #self.state = np.array([640.0, 410.0])  # Un valor dentro de los límites [0,0] y [1280,820]
         self.state = self.agent_position  # Un valor dentro de los límites [0,0] y [1280,820]
@@ -96,13 +96,6 @@ class MiEntorno(gym.Env):
         self.window_open = True  # Indica si la ventana de Pygame está abierta
 
     def reset(self, seed=None, options=None):
-        """
-        Reinicia el entorno al estado inicial.
-
-        Returns:
-            state (np.array): Estado inicial del agente.
-            info (dict): Información adicional (vacío en este caso).
-        """
         if seed is not None:
             np.random.seed(seed)
 
@@ -161,37 +154,11 @@ class MiEntorno(gym.Env):
         return collision is not None
 
     def get_random_reward_position(self):
-        """
-        Genera una posición aleatoria dentro de los límites de la pantalla para la recompensa.
-
-        Este método garantiza que el premio aparezca dentro de los límites visibles de la pantalla y 
-        en un lugar diferente cada vez que se llama.
-
-        Returns:
-            tuple: Coordenadas (x, y) de la nueva posición del premio.
-        """
         x = np.random.randint(150, 1128 - self.reward_square_size) #zona util
         y = np.random.randint(89, 598 - self.reward_square_size) #zona util
         return (x, y)
 
     def step(self, action):
-        """
-        Realiza un paso en el entorno basado en la acción tomada por el agente.
-
-        Args:
-            action (int): Acción elegida por el agente. Puede tomar los valores:
-                - 0: Mover hacia la izquierda.
-                - 1: Mover hacia la derecha.
-                - 2: Mover hacia arriba.
-                - 3: Mover hacia abajo.
-
-        Returns:
-            state (np.array): Nuevo estado del entorno.
-            reward (float): Recompensa obtenida tras realizar la acción.
-            done (bool): Indicador de si el episodio ha terminado.
-            truncated (bool): Indicador de si el episodio fue truncado.
-            info (dict): Información adicional.
-        """
         prev_position = self.agent_position.copy()
 
         # Resta el tiempo de la cuenta regresiva (basado en tiempo real)
@@ -218,27 +185,29 @@ class MiEntorno(gym.Env):
                 self.agent_position[0] -= self.agent_speed  # Mover el agente a la izquierda
                 # Asegurarse de que el borde izquierdo del agente no cruce el borde del entorno
                 print("accion 0, posicion antes np.clip: ",self.agent_position[0])
-                self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145)
+                self.agent_position[0] = np.clip(self.agent_position[0], self.eje1, 1145) 
                 print("accion 0, posicion despues: ",self.agent_position[0])
                 self.target_angle = 180  # Establecer ángulo objetivo hacia la izquierda
             elif action == 1:  # Movimiento hacia la derecha
                 #self.state += 1
                 self.agent_position[0] += self.agent_speed  # Mover el agente a la derecha
                 # Asegurarse de que el borde derecho del agente no cruce el borde del entorno
-                self.agent_position[0] = np.clip(self.agent_position[0], 150.5 + self.agent_width / 2, 1145 - self.agent_width)
+                self.agent_position[0] = np.clip(self.agent_position[0], self.eje1, 1145 - self.agent_width)
                 print("accion 1, posicion: ",self.agent_position[0])
                 self.target_angle = 0  # Establecer ángulo objetivo hacia la derecha
             elif action == 2:  # Movimiento hacia arriba
                 #self.state += 0.5
                 self.agent_position[1] -= self.agent_speed  # Mover el agente hacia arriba
                 # Asegurarse de que el borde superior del agente no cruce el borde del entorno
-                self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617)
+                self.agent_position[1] = np.clip(self.agent_position[1], self.eje2, 617)
+                print("accion 2, posicion despues: ",self.agent_position[1])
                 self.target_angle = 270  # Establecer ángulo objetivo hacia arriba
             elif action == 3:  # Movimiento hacia abajo
                 #self.state -= 0.5
                 self.agent_position[1] += self.agent_speed  # Mover el agente hacia abajo
                 # Asegurarse de que el borde inferior del agente no cruce el borde del entorno
-                self.agent_position[1] = np.clip(self.agent_position[1], 150.5 + self.agent_height / 2, 617 - self.agent_height)
+                self.agent_position[1] = np.clip(self.agent_position[1], self.eje2, 617 - self.agent_height)
+                print("accion 3, posicion despues: ",self.agent_position[1])
                 self.target_angle = 90  # Establecer ángulo objetivo hacia abajo
             #print(f"Posición del agente durante step: {self.agent_position}")
             print(f"Paso {self.current_step}: Acción {action}")
@@ -352,16 +321,6 @@ class MiEntorno(gym.Env):
             return self.state, reward, self.done, truncated, {}
 
     def render(self, mode="human"):
-        """
-        Renderiza el entorno en la ventana de Pygame.
-
-        Este método dibuja el fondo, al agente, y la recompensa en sus posiciones actuales. También 
-        muestra información sobre el episodio, como la puntuación acumulada, el número de episodios, 
-        y el tiempo restante. Actualmente, solo soporta el modo 'human'.
-
-        Args:
-            mode (str): Modo de renderizado (solo se admite 'human').
-        """
         if mode == 'human':
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
@@ -411,13 +370,6 @@ class MiEntorno(gym.Env):
             pygame.display.flip()
 
     def close(self):
-        """
-        Cierra el entorno y Pygame.
-
-        Este método imprime información final sobre el último episodio antes de cerrar la ventana.
-        Por ejemplo, si has abierto archivos, conexiones de red o cualquier otro recurso externo,
-        debes asegurarte de liberarlos aquí para evitar fugas de memoria o problemas de rendimiento.
-        """
         print(f"Último episodio: {self.current_episode}, Puntuación final: {self.current_score}")
         self.window_open = False
         pygame.quit()
