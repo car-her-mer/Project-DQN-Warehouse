@@ -8,6 +8,9 @@
 # se cargan los menús de la interfaz gráfica, 
 # llamando a las funciones de menu_principal.py y menu_info.py.
 
-from Entornos_personalizados.RegistrarEntorno import Registrar
+from Menus import menu_principal
+from Entornos_personalizados.RegistrarEntorno import IniciarEntorno
 
-Registrar()
+if menu_principal.mostrar_menu() == "entrenar":
+    # Crear una instancia del entorno
+    mi_entorno = IniciarEntorno()  # Instancia de la clase que contiene el código del entorno

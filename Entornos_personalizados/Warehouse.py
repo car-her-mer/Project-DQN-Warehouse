@@ -34,7 +34,7 @@ class MiEntorno(gym.Env):
         self.max_steps = 100  # Máximo número de pasos por episodio
 
         # Definir la cuenta regresiva y el tiempo inicial (en segundos)
-        self.sec = 10
+        self.sec = 60
         self.countdown_time = self.sec  # Duración máxima del episodio
 
         # Espacios de observación y acción
@@ -47,7 +47,7 @@ class MiEntorno(gym.Env):
         pygame.display.set_caption("Warehouse Environment")
 
         # Cargar imagen de fondo
-        self.background_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\fondo.png").convert()
+        self.background_image = pygame.image.load("Project_RL-Warehouse\\Assets\\fondo.png").convert()
 
         # Dirección inicial del agente
         self.agent_angle = 0  # Ángulo de orientación inicial
@@ -65,7 +65,7 @@ class MiEntorno(gym.Env):
         self.environment_position = (0, 0)  # El entorno está fijo en la posición (0, 0)
 
         # Cargar y redimensionar la imagen del agente
-        self.agent_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\agente.png").convert_alpha()
+        self.agent_image = pygame.image.load("Project_RL-Warehouse\\Assets\\agente.png").convert_alpha()
         original_width, original_height = self.agent_image.get_size()
         scale_factor = 0.2  # Factor de escalado
         self.agent_width = int(original_width * scale_factor) #57
@@ -73,14 +73,14 @@ class MiEntorno(gym.Env):
         self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))
 
         # Cargar la imagen del premio
-        self.reward_image = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\reward.png").convert_alpha()
+        self.reward_image = pygame.image.load("Project_RL-Warehouse\\Assets\\reward.png").convert_alpha()
 
         # Definir la posición y el tamaño del cuadrado de recompensa
         self.reward_square_size = 30  # Tamaño del cuadrado de recompensa
         self.reward_position = [500, 300]  # Posición inicial del premio
 
-        self.agent_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraAgente.png").convert_alpha()
-        self.environment_mask = pygame.image.load("IA\\Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
+        self.agent_mask = pygame.image.load("Project_RL-Warehouse\\Assets\\mascaraAgente.png").convert_alpha()
+        self.environment_mask = pygame.image.load("Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
 
         self.agent_mask = pygame.transform.scale(self.agent_mask, (self.agent_width, self.agent_height))
 
@@ -101,8 +101,8 @@ class MiEntorno(gym.Env):
 
         # Restablecer los parámetros iniciales
         # Restablecer la posición exacta del agente
-        self.agent_position = np.array([self.eje1, self.eje2], dtype=np.float32)  # Garantizar tipo de dato correcto
-        self.state = np.copy(np.array(self.agent_position, dtype=np.float32))  # Copia para evitar referencias inesperadas
+        self.agent_position = np.array([self.eje1, self.eje2], dtype=np.float64)  # Garantizar tipo de dato correcto
+        self.state = np.copy(np.array(self.agent_position, dtype=np.float64))  # Copia para evitar referencias inesperadas
 
         self.done = False
         self.current_step = 0
@@ -220,7 +220,7 @@ class MiEntorno(gym.Env):
             self.episode_restarted = True
             #self.agent_position = np.array([self.eje1, self.eje2])  # Volver a la posicion inicial
 
-        self.state = np.array(self.agent_position, dtype=np.float32)
+        self.state = np.array(self.agent_position, dtype=np.float64)
         # Rotar el agente lentamente hacia el ángulo objetivo
         #print(f"Ángulo actual: {self.agent_angle}")
         #print(f"Ángulo objetivo: {self.target_angle}")
