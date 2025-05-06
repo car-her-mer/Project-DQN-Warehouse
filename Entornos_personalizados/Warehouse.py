@@ -25,6 +25,7 @@ class MiEntorno(gym.Env):
         self.best_score = 0  # Variable para la mejor puntuación
         self.current_episode = 0  # Número de episodios jugados
         self.best_episode = 0  # Variable para el mejor episodio
+        self.reward = 0
         self.current_reward = 0
         self.best_reward = 0
 
@@ -34,7 +35,7 @@ class MiEntorno(gym.Env):
         self.max_steps = 100  # Máximo número de pasos por episodio
 
         # Definir la cuenta regresiva y el tiempo inicial (en segundos)
-        self.sec = 60
+        self.sec = 10
         self.countdown_time = self.sec  # Duración máxima del episodio
 
         # Espacios de observación y acción
@@ -47,7 +48,7 @@ class MiEntorno(gym.Env):
         pygame.display.set_caption("Warehouse Environment")
 
         # Cargar imagen de fondo
-        self.background_image = pygame.image.load("Project_RL-Warehouse\\Assets\\fondo.png").convert()
+        self.background_image = pygame.image.load("Assets\\fondo.png").convert()
 
         # Dirección inicial del agente
         self.agent_angle = 0  # Ángulo de orientación inicial
@@ -65,7 +66,7 @@ class MiEntorno(gym.Env):
         self.environment_position = (0, 0)  # El entorno está fijo en la posición (0, 0)
 
         # Cargar y redimensionar la imagen del agente
-        self.agent_image = pygame.image.load("Project_RL-Warehouse\\Assets\\agente.png").convert_alpha()
+        self.agent_image = pygame.image.load("Assets\\agente.png").convert_alpha()
         original_width, original_height = self.agent_image.get_size()
         scale_factor = 0.2  # Factor de escalado
         self.agent_width = int(original_width * scale_factor) #57
@@ -73,14 +74,14 @@ class MiEntorno(gym.Env):
         self.agent_image = pygame.transform.scale(self.agent_image, (self.agent_width, self.agent_height))
 
         # Cargar la imagen del premio
-        self.reward_image = pygame.image.load("Project_RL-Warehouse\\Assets\\reward.png").convert_alpha()
+        self.reward_image = pygame.image.load("Assets\\reward.png").convert_alpha()
 
         # Definir la posición y el tamaño del cuadrado de recompensa
         self.reward_square_size = 30  # Tamaño del cuadrado de recompensa
         self.reward_position = [500, 300]  # Posición inicial del premio
 
-        self.agent_mask = pygame.image.load("Project_RL-Warehouse\\Assets\\mascaraAgente.png").convert_alpha()
-        self.environment_mask = pygame.image.load("Project_RL-Warehouse\\Assets\\mascaraFondo.png").convert()
+        self.agent_mask = pygame.image.load("Assets\\mascaraAgente.png").convert_alpha()
+        self.environment_mask = pygame.image.load("Assets\\mascaraFondo.png").convert()
 
         self.agent_mask = pygame.transform.scale(self.agent_mask, (self.agent_width, self.agent_height))
 
@@ -108,6 +109,7 @@ class MiEntorno(gym.Env):
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
         self.current_reward = 0
+        #self.reward = 0
         self.countdown_time = self.sec
         self.start_time = time.time()  # Reiniciar el tiempo de inicio al reiniciar el entorno
         self.reward_position = self.get_random_reward_position()  # Nueva posición de recompensa
@@ -235,7 +237,8 @@ class MiEntorno(gym.Env):
 
         # Si el tiempo se acabó, penalizar y reiniciar
         if self.countdown_time == 0 or self.check_collision():
-            reward = -10  # Penalización cuando el tiempo se acaba
+            print("time out: ",self.reward)
+            self.reward -= 10  # Penalización cuando el tiempo se acaba
             self.done = True  # Marcar el episodio como terminado
             self.current_score -= 10
             truncated = True
@@ -244,7 +247,8 @@ class MiEntorno(gym.Env):
             if self.check_collision():
                 print("¡Colisión detectada! Reiniciando episodio.")
             else:
-                print(f"Tiempo agotado. Episodio terminado. Recompensa: {reward}")
+                print(f"Tiempo agotado. Episodio terminado. Recompensa: {self.reward}")
+                print(f"Current score: {self.current_score}")
 
             # Al final del episodio, comparar la puntuación actual con la mejor puntuación
             if self.current_reward > self.best_reward:
@@ -266,7 +270,7 @@ class MiEntorno(gym.Env):
             
             # Limitar el estado dentro de los valores válidos
             self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
-            return self.state, reward, self.done, truncated, {}  
+            return self.state, self.reward, self.done, truncated, {}  
         else:
             self.done = False
             truncated = False  # El episodio no se truncó
@@ -279,14 +283,12 @@ class MiEntorno(gym.Env):
 
             # Evaluar si el agente se acerca o se aleja de la recompensa
             if distance_after < distance_before:
-                reward = 1  # El agente se acerca al premio
+                self.reward += 1  # El agente se acerca al premio
                 self.current_score += 1
             elif distance_after > distance_before:
-                reward = -1  # El agente se aleja del premio
+                self.reward -= 1  # El agente se aleja del premio
                 self.current_score -= 1
-            else:
-                reward = 0  # El agente no cambia su distancia al premio
-            
+                        
             # Verificar si el agente toca el cuadrado de recompensa
             #agent_rect = pygame.Rect(self.agent_position[0], self.agent_position[1], self.agent_width, self.agent_height)
             reward_rect = pygame.Rect(self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size)
@@ -304,23 +306,23 @@ class MiEntorno(gym.Env):
             # Comprobar si hay colisión entre el agente y el cuadrado de recompensa
             if agent_rect.colliderect(reward_rect) and not self.reward_collected:
                 # El agente recoge la recompensa, aumentando su puntuación y generando un nuevo premio.
-                reward = 50  # Recompensa por recoger el premio
+                self.reward += 50  # Recompensa por recoger el premio
                 self.reward_position = self.get_random_reward_position()  # Mover el premio a una nueva posición
                 self.reward_collected = True  # Marcar la recompensa como recogida
-                self.current_score += reward  # Incrementar la puntuación del agente
+                self.current_score += self.reward  # Incrementar la puntuación del agente
                 self.current_reward += 1
             else:
                 # Si el agente ya ha recogido la recompensa, permitirlo nuevamente al salir de la zona
                 if not agent_rect.colliderect(reward_rect):
                     self.reward_collected = False
-                reward = -0.1  # Pequeña penalización para evitar quedarse quieto
+                #self.reward -= 0.1  # Pequeña penalización para evitar quedarse quieto
 
             # Limitar el estado dentro de los valores válidos
             self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
 
-            #print(f"estado en el state de step: {self.state}")
+            print(f"estado en el state de reward: {self.reward}")
             
-            return self.state, reward, self.done, truncated, {}
+            return self.state, self.reward, self.done, truncated, {}
 
     def render(self, mode="human"):
         if mode == 'human':

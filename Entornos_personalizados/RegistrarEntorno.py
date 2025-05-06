@@ -118,7 +118,7 @@ def IniciarEntorno():
             train_model(state, action, reward, next_state, done)
 
             state = next_state
-            total_reward += reward
+            total_reward = reward
 
             # Actualización del gráfico
             if len(episode_rewards) >= 0:
@@ -132,15 +132,15 @@ def IniciarEntorno():
 
             if done or truncated:
                 episode_rewards.append(total_reward)
-                print(f"Episodio: {episode} Recompensa total = {episode_rewards}")
+                print(f"Episodio done: {episode} Recompensa total = {episode_rewards}")
                 if epsilon > epsilon_min:
                     epsilon *= epsilon_decay
                 episode += 1
                 break
 
     if not env.window_open:
-        episode_rewards.append(total_reward)
-        print(f"Episodio: {episode} Recompensa total = {episode_rewards}")
+        #episode_rewards.append(total_reward)
+        print(f"Episodio not window_open: {episode} Recompensa total = {episode_rewards}")
 
 
     # Desactivar el modo interactivo y mostrar el gráfico final
