@@ -1,0 +1,10 @@
+PIL
+numpy
+sys
+os
+gym
+tensorflow
+keras
+matplotlib
+pygame
+time

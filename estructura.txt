@@ -11,12 +11,6 @@
 │   ├── menu_principal.py    # Lógica para el menú principal
 │   └── menu_info.py         # Lógica para el menú de información
 │
-├── /entorno_gym/            # Carpeta para la ejecución del entorno de OpenAI Gym
-│   └── ejecutar_gym.py      # Lógica para ejecutar el entorno de OpenAI Gym
-│
-├── /utils/                  # Carpeta para funciones auxiliares
-│   └── botones.py           # Funciones para crear y gestionar botones
-│
 ├── main.py                  # Archivo principal que orquesta la aplicación
 └── README.md                # Información general sobre el proyecto
 

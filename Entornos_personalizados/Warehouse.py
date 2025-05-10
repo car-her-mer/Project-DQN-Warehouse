@@ -35,7 +35,7 @@ class MiEntorno(gym.Env):
         self.max_steps = 100  # Máximo número de pasos por episodio
 
         # Definir la cuenta regresiva y el tiempo inicial (en segundos)
-        self.sec = 10
+        self.sec = 60
         self.countdown_time = self.sec  # Duración máxima del episodio
 
         # Espacios de observación y acción
@@ -109,7 +109,7 @@ class MiEntorno(gym.Env):
         self.current_step = 0
         self.current_score = 0  # Reiniciar la puntuación
         self.current_reward = 0
-        #self.reward = 0
+        self.reward = 0
         self.countdown_time = self.sec
         self.start_time = time.time()  # Reiniciar el tiempo de inicio al reiniciar el entorno
         self.reward_position = self.get_random_reward_position()  # Nueva posición de recompensa
@@ -262,9 +262,9 @@ class MiEntorno(gym.Env):
             # Aquí puedes verificar el estado después de aplicar la acción
             #print("Estado después de la acción:", self.state)
 
-            if self.done:
+            """if self.done:
                 # Reiniciar el entorno para el siguiente episodio
-                self.state, _ = self.reset()
+                self.state, _ = self.reset()"""
 
             self.current_episode += 1    # Incrementar el episodio
             

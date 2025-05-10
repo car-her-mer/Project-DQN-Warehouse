@@ -118,6 +118,7 @@ def IniciarEntorno():
             train_model(state, action, reward, next_state, done)
 
             state = next_state
+            print(f"Valor variable reward = {reward}")
             total_reward = reward
 
             # Actualización del gráfico
@@ -132,7 +133,7 @@ def IniciarEntorno():
 
             if done or truncated:
                 episode_rewards.append(total_reward)
-                print(f"Episodio done: {episode} Recompensa total = {episode_rewards}")
+                print(f"total_reward: {total_reward}. Episodio done: {episode} Recompensa total = {episode_rewards}")
                 if epsilon > epsilon_min:
                     epsilon *= epsilon_decay
                 episode += 1
