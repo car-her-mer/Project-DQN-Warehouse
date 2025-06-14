@@ -59,7 +59,7 @@ class MiEntorno(gym.Env):
         # Inicializar la posición del agente y entorno
         self.eje1 = 170 
         self.eje2 = 120 
-        self.agent_position = [self.eje1, self.eje2]  # Posición inicial del agente (puede cambiar dinámicamente)
+        self.agent_position = np.array([self.eje1, self.eje2])  # Posición inicial del agente (puede cambiar dinámicamente)
         #self.state = np.array([640.0, 410.0])  # Un valor dentro de los límites [0,0] y [1280,820]
         self.state = self.agent_position  # Un valor dentro de los límites [0,0] y [1280,820]
         #print(f"Posición del agente al init: {self.agent_position}")
@@ -80,13 +80,14 @@ class MiEntorno(gym.Env):
         self.reward_square_size = 30  # Tamaño del cuadrado de recompensa
         self.reward_position = [500, 300]  # Posición inicial del premio
 
-        self.agent_mask = pygame.image.load("Assets\\mascaraAgente.png").convert_alpha()
-        self.environment_mask = pygame.image.load("Assets\\mascaraFondo.png").convert()
+        self.agent_mask_image = pygame.image.load("Assets\\mascaraAgente.png").convert_alpha()
+        self.environment_mask = pygame.image.load("Assets\\mascaraFondoAlpha.png").convert_alpha()
 
-        self.agent_mask = pygame.transform.scale(self.agent_mask, (self.agent_width, self.agent_height))
+        self.agent_mask_image = pygame.transform.scale(self.agent_mask_image, (self.agent_width, self.agent_height))
 
         # Crear máscaras del agente y del entorno al inicio
-        self.agent_mask = pygame.mask.from_surface(self.agent_mask)  # Máscara del agente
+        self.agent_mask = pygame.mask.from_surface(self.agent_mask_image)  # Máscara del agente
+        
         if not hasattr(self, 'environment_mask_obj'):  # Crear solo una vez la máscara del fondo
             self.environment_mask_obj = pygame.mask.from_surface(self.environment_mask)
 
@@ -321,14 +322,19 @@ class MiEntorno(gym.Env):
             self.state = np.clip(self.state, self.observation_space.low, self.observation_space.high)
 
             print(f"estado en el state de reward: {self.reward}")
-            
+            self.render()
             return self.state, self.reward, self.done, truncated, {}
 
     def render(self, mode="human"):
         if mode == 'human':
+            if not self.window_open:
+                self.close()
+                return
+            
             for evento in pygame.event.get():
                 if evento.type == pygame.QUIT:
                     self.window_open = False # Marcar la ventana como cerrada
+                    self.close()
                     # pygame.quit()
                     return
 
@@ -339,10 +345,13 @@ class MiEntorno(gym.Env):
 
             # Rotar y dibujar el agente
             rotated_agent = pygame.transform.rotate(self.agent_image, -self.agent_angle)
-            #rotated_agent = pygame.transform.rotate(self.agent_mask, -self.agent_angle)
             agent_rect = rotated_agent.get_rect(center=(self.agent_position[0], self.agent_position[1])) 
-            
             self.screen.blit(rotated_agent, agent_rect.topleft)
+            
+            # Rotar y dibujar la mascara del agente
+            rotated_mask_surface = pygame.transform.rotate(self.agent_mask_image, -self.agent_angle)
+            mask_rect = rotated_mask_surface.get_rect(center=(self.agent_position[0], self.agent_position[1])) 
+            #self.screen.blit(rotated_mask_surface, mask_rect.topleft) #comprobar la mascara
 
             # Dibujar la recompensa
             self.screen.blit(self.reward_image, (self.reward_position[0], self.reward_position[1], self.reward_square_size, self.reward_square_size))

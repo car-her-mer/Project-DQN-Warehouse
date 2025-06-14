@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 
 # Cargar las imágenes proporcionadas
-path_fondo = "IA\\Project_RL-Warehouse\\Assets\\fondo.png"
+path_fondo = "Assets\\fondo.png"
 
 # Cargar las imágenes
 fondo_img = Image.open(path_fondo).convert("RGBA")
