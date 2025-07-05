@@ -43,9 +43,11 @@ def IniciarEntorno():
     action_size = env.action_space.n  # Número de acciones posibles (discreto, como en el caso de una red neuronal con política discreta)
 
     # Modelo DQN (red neuronal)
+    # Hasta 3/4 capas suele estar bien para DQN
+    # Para redes más grandes, utilizar 'experience replay' y 'target network'
     model = tf.keras.Sequential([
         layers.Dense(24, activation='relu', input_shape=(state_size,)),
-        layers.Dense(24, activation='relu'),
+        layers.Dense(24, activation='relu'), # a veces es mejor añadir más neuronas en vez de más capas
         layers.Dense(action_size, activation='linear')  # Acción con salida lineal (Q-valor)
     ])
 

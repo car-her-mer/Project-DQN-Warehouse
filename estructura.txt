@@ -1,24 +1,28 @@
 /Project RL - Warehouse/
 │
-├── /assets/                 # Carpeta para recursos (imágenes, sonidos, etc.)
-│   ├── logo.png             # Ejemplo de imagen que puedes usar para el logo
-│   └── fondo_menu.jpg       # Fondo para los menús
+├── /Assets/                    # Carpeta para recursos (imágenes)
+│   ├── agente.png              # imagen del agente (robot)
+│   ├── fondo.png               # imagen del fondo
+│   ├── mascaraAgente.png       # mascara del robot (para las fisicas)
+│   ├── mascaraFondoAlpha.png   # mascara del fondo (para las fisicas)
+│   └── reward.png              # imagen de la recompensa (paquete)
 │
-├── /entornos/               # Carpeta para entornos personalizados
-│   └── mi_entorno.py        # Archivo que contiene la definición del entorno personalizado
+├── /Entorno/                   # Carpeta con el entrenamiento, registro del entorno en gym y pygame
+│   ├── Entrenamiento.py        # archivo que incluye el registro del entorno en openAI gym + entrenamiento DQN
+│   └── Warehouse.py            # archivo que incluye paygame para la parte visual + sumar puntos / restar puntos
 │
-├── /menus/                  # Carpeta para los diferentes menús
-│   ├── menu_principal.py    # Lógica para el menú principal
-│   └── menu_info.py         # Lógica para el menú de información
+├── /Menus/                     # Carpeta para los diferentes menús
+│   ├── menu_principal.py       # Lógica para el menú principal
+│   └── info.py                 # Lógica para mostrar información visual
 │
-├── main.py                  # Archivo principal que orquesta la aplicación
-└── README.md                # Información general sobre el proyecto
+├── main.py                     # Archivo principal que orquesta la aplicación
+└── README.md                   # Información general sobre el proyecto
 
 Flujo de Ejecución del Código
 El flujo de ejecución del código sería algo como esto:
 
 El archivo main.py se ejecuta.
 main.py carga el menú principal de menu_principal.py.
-Cuando el usuario hace clic en "Ir a Información", se llama a menu_info.py.
-Cuando el usuario hace clic en "Ejecutar Entorno Gym", se llama a ejecutar_gym.py para iniciar el entorno de OpenAI Gym.
-El código se organiza de manera modular, lo que facilita su mantenimiento y escalabilidad.
+Cuando el usuario hace clic en "Ir a Información", se muestra la información.
+Cuando el usuario hace clic en "Ejecutar Entorno Gym", se muestra un submenu para mostrar resumidamente la parte visual.
+    Al darle a continuar, se ejecuta el archivo Entrenamiento.py para iniciar el entorno de OpenAI Gym.

@@ -9,7 +9,7 @@
 # llamando a las funciones de menu_principal.py y menu_info.py.
 
 from Menus import menu_principal
-from Entornos_personalizados.RegistrarEntorno import IniciarEntorno
+from Entorno.Entrenamiento import IniciarEntorno
 
 if menu_principal.mostrar_menu() == "entrenar":
     # Crear una instancia del entorno

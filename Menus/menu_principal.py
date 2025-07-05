@@ -7,6 +7,8 @@
 
 import pygame
 import sys
+from Menus.info import mostrar_submenu
+
 
 def ajustar_texto(texto, fuente, max_ancho):
     """
@@ -40,7 +42,11 @@ def mostrar_menu():
     pygame.display.set_caption("Menú Principal")
 
     fuente = pygame.font.SysFont("Calibri", 48)
-    opciones = ["1. Iniciar entrenamiento", "2. Ver información", "3. Salir"]
+    opciones = ["1. Iniciar entrenamiento DQN.", 
+                "2. Ver información sobre el proyecto.", 
+                "3. Salir", 
+                " ", " ", " ", " ", 
+                "                Proyecto Final Nodd3r  -  Carolina Hernández."]
 
     seleccion = 0
     ejecutando = True
@@ -68,7 +74,7 @@ def mostrar_menu():
                 elif evento.key == pygame.K_RETURN:
                     if seleccion == 0:
                         # ejecutando = False  # Continuar al entorno
-                        return "entrenar"
+                        return mostrar_submenu(pantalla)
                     elif seleccion == 1:
                         mostrar_informacion(pantalla, fuente)
                     elif seleccion == 2:

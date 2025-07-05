@@ -50,13 +50,20 @@ A medida que el robot explora más, esta tabla Q se vuelve más completa y preci
 ## 3. **Tecnologias.**
 <small>[Volver ↥](#indice)</small>
 - **Python.**
-- **Pygame:** Crear mi propio entorno en OpenAI GYM.
-- **OpenAI GYM:** Entorno donde entrenar al modelo.
-- **TensorFlow:** para la parte de DL (Deep Learning)
-- **Deep Q Network:** para el modelo de DRL (Deep Reinforcement Learning)
+- **Pygame:** Crear mi propio entorno para utilizarlo en OpenAI GYM.
+- **OpenAI GYM:** Entorno creado con pygame donde entrenar al modelo.
+- **TensorFlow:** Crear una red neuronal. (Deep Learning)
+- **Deep Q Network:** Algoritmo de DRL utilizado para el entrenamiento. (Deep Reinforcement Learning)
 
 ## 4. **Proyecto.**
 <small>[Volver ↥](#indice)</small>
-(En proceso)
+### Partes visuales del proyecto.
+![Información](Assets/info.png)
 
+### Explicación funcional.
+Como gana puntos.
+Como pierde puntos.
 
+### Instrucciones para ejecutarlo en local.
+pasos para sacarlo de github a tu local
+pasos para ejecutarlo en local
