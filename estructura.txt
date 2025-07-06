@@ -1,4 +1,4 @@
-/Project_RL-Warehouse/
+/Project-DQN-Warehouse/
 │
 ├── /Assets/                    # Carpeta para recursos (imágenes)
 │   ├── agente.png              # Imagen del agente (robot)
