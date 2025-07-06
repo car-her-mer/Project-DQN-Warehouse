@@ -3,11 +3,11 @@
 ## **Índice**
 1. [Problema.](#1-problema)
 2. [Idea.](#2-idea)
-3. [Tecnologías.](#3-tecnologias)
+3. [Tecnologías.](#3-tecnologías)
 4. [Proyecto.](#4-proyecto)
 
 ## 1. **Problema.**
-<small>[Volver ↥](#indice)</small>
+<small>[Volver ↥](#índice)</small>
 
 El problema que se busca solucionar es el de **optimización de rutas**, donde el agente (robot, reparto, Uber, etcétera) encuentra el camino más eficiente del punto A al punto B.
 Actualmente se resuelve con tres enfoques tradicionales: *Grafos, optimización y heurísticas.*
@@ -28,7 +28,7 @@ Actualmente se resuelve con tres enfoques tradicionales: *Grafos, optimización 
 - **Limitación**: Los grafos representan bien conexiones estáticas, pero no son dinámicos, por lo que si se bloquea una conexión, el algoritmo necesita volver a calcular todo desde cero.
 
 ## 2. **Idea.**
-<small>[Volver ↥](#indice)</small>
+<small>[Volver ↥](#índice)</small>
 ### **DQN (Deep Q-Learning)**
 - **Concepto general**: DQN es una técnica de Reinforcement Learning (RL) que permite a un agente (como un robot) aprender qué acciones debe tomar en cada situación para maximizar sus recompensas a lo largo del tiempo. A diferencia de los métodos tradicionales, DQN permite al agente aprender mediante prueba y error, explorando y mejorando con cada experiencia.
 
@@ -48,7 +48,7 @@ A medida que el robot explora más, esta tabla Q se vuelve más completa y preci
   - **Exploración y explotación**: DQN necesita explorar varias opciones antes de poder explotar sus conocimientos para tomar siempre las mejores decisiones. Esta fase de exploración puede llevar a que el robot tome decisiones subóptimas al inicio.
 
 ## 3. **Tecnologías.**
-<small>[Volver ↥](#indice)</small>
+<small>[Volver ↥](#índice)</small>
 - **Python.**
 - **Pygame:** Crear mi propio entorno para utilizarlo en OpenAI GYM.
 - **OpenAI GYM:** Entorno creado con pygame donde entrenar al modelo.
@@ -56,7 +56,7 @@ A medida que el robot explora más, esta tabla Q se vuelve más completa y preci
 - **Deep Q Network:** Algoritmo de DRL utilizado para el entrenamiento. (Deep Reinforcement Learning)
 
 ## 4. **Proyecto.**
-<small>[Volver ↥](#indice)</small>
+<small>[Volver ↥](#índice)</small>
 ### Partes visuales del proyecto.
 ![Información](Assets/menu.png)
 - **Menú principal**
@@ -159,5 +159,4 @@ A continuación se explica cómo descargar y ejecutar el proyecto en tu propio o
 - [LinkedIn](https://www.linkedin.com/in/car-her-mer/)  
 
 ---
-
-[⬆ Volver al inicio](#indice)
+<small>[Volver ↥](#índice)</small>
