@@ -1,53 +1,53 @@
 # **Proyecto Deep Reinforcement Learning - Optimización de rutas.**
 
-## **Indice**
+## **Índice**
 1. [Problema.](#1-problema)
 2. [Idea.](#2-idea)
-3. [Tecnologias.](#3-tecnologias)
+3. [Tecnologías.](#3-tecnologias)
 4. [Proyecto.](#4-proyecto)
 
 ## 1. **Problema.**
 <small>[Volver ↥](#indice)</small>
 
-El problema que se busca solucionar sería el de **optimización de rutas**, donde el agente (robot, reparto, uber, etcetera) encuentra el camino más eficiente del punto A al punto B.
-Actualmente se resuelve con tres enfoques tradicionales: *Grafos, optimización y heuristicas.*
+El problema que se busca solucionar es el de **optimización de rutas**, donde el agente (robot, reparto, Uber, etcétera) encuentra el camino más eficiente del punto A al punto B.
+Actualmente se resuelve con tres enfoques tradicionales: *Grafos, optimización y heurísticas.*
 
 ### **Optimización (Ejemplo: Dijkstra)**
 - **Concepto**: La optimización en el contexto de rutas significa encontrar el camino más eficiente entre dos puntos en una red. Piensa en un robot que necesita llegar del punto A al punto B en un almacén: la optimización busca la forma más rápida o menos costosa de hacer ese recorrido.
-- **Ejemplo Conceptual**: Imagina que el robot tiene un mapa y usa un “algoritmo de optimización” como Dijkstra para saber qué camino tomar, eligiendo siempre la opción más corta en cada paso hasta llegar al destino.
+- **Ejemplo conceptual**: Imagina que el robot tiene un mapa y usa un “algoritmo de optimización” como Dijkstra para saber qué camino tomar, eligiendo siempre la opción más corta en cada paso hasta llegar al destino.
 - **Limitación**: Este tipo de algoritmo supone que el entorno es estático (es decir, que no cambian las rutas o las distancias), y no tiene capacidad para adaptarse a cambios imprevistos como obstáculos.
 
-### **Heurísticas (Ejemplo: A)**
+### **Heurísticas (Ejemplo: A*)**
 - **Concepto**: Una heurística es una “regla rápida” que ayuda a reducir el tiempo de búsqueda de una solución sin garantizar que sea perfecta, sino lo suficientemente buena. Este enfoque se usa cuando no es práctico o posible calcular la ruta exacta, especialmente en redes grandes o complejas.
-- **Ejemplo Conceptual**: El robot, en lugar de revisar todas las rutas posibles, usa una heurística, como “moverse hacia el objetivo si parece que está más cerca”, para reducir la cantidad de rutas que considera. El algoritmo A* usa una combinación de la distancia real más una “estimación” de cuánto falta para llegar al destino, lo que le permite encontrar caminos buenos más rápido que con optimización pura.
+- **Ejemplo conceptual**: El robot, en lugar de revisar todas las rutas posibles, usa una heurística, como “moverse hacia el objetivo si parece que está más cerca”, para reducir la cantidad de rutas que considera. El algoritmo A* usa una combinación de la distancia real más una “estimación” de cuánto falta para llegar al destino, lo que le permite encontrar caminos buenos más rápido que con optimización pura.
 - **Limitación**: Aunque es más rápido que Dijkstra en algunos casos, A* aún requiere que el entorno sea relativamente estable y no se adapta a cambios en tiempo real.
 
 ### **Grafos**
 - **Concepto**: Un grafo es una estructura matemática que representa elementos (llamados nodos) y sus conexiones (llamadas aristas). Los métodos basados en grafos ayudan a representar mapas de rutas o conexiones de manera que se puedan aplicar algoritmos para encontrar rutas.
-- **Ejemplo Conceptual**: Imagina el almacén como una serie de puntos de interés (estanterías, áreas de recogida, etc.), conectados por caminos. Cada punto es un nodo, y cada conexión es una arista. Los algoritmos de grafos, como Dijkstra o A*, pueden entonces usarse para buscar el camino óptimo de un punto a otro en este “mapa de nodos y conexiones”.
+- **Ejemplo conceptual**: Imagina el almacén como una serie de puntos de interés (estanterías, áreas de recogida, etc.), conectados por caminos. Cada punto es un nodo, y cada conexión es una arista. Los algoritmos de grafos, como Dijkstra o A*, pueden entonces usarse para buscar el camino óptimo de un punto a otro en este “mapa de nodos y conexiones”.
 - **Limitación**: Los grafos representan bien conexiones estáticas, pero no son dinámicos, por lo que si se bloquea una conexión, el algoritmo necesita volver a calcular todo desde cero.
 
 ## 2. **Idea.**
 <small>[Volver ↥](#indice)</small>
 ### **DQN (Deep Q-Learning)**
-- **Concepto General**: DQN es una técnica de Reinforcement Learning (RL) que permite a un agente (como un robot) aprender qué acciones debe tomar en cada situación para maximizar sus recompensas a lo largo del tiempo. A diferencia de los métodos tradicionales, DQN permite al agente aprender mediante prueba y error, explorando y mejorando con cada experiencia.
+- **Concepto general**: DQN es una técnica de Reinforcement Learning (RL) que permite a un agente (como un robot) aprender qué acciones debe tomar en cada situación para maximizar sus recompensas a lo largo del tiempo. A diferencia de los métodos tradicionales, DQN permite al agente aprender mediante prueba y error, explorando y mejorando con cada experiencia.
 
-- **Cómo Funciona Conceptualmente**: Imagina que el robot en el almacén tiene una tabla que le dice qué tan buena es cada acción en cada posición o situación. Esta tabla se llama tabla Q y le dice al robot qué tan "recompensante" será cada acción en función de sus experiencias pasadas.
+- **Cómo funciona conceptualmente**: Imagina que el robot en el almacén tiene una tabla que le dice qué tan buena es cada acción en cada posición o situación. Esta tabla se llama tabla Q y le dice al robot qué tan "recompensante" será cada acción en función de sus experiencias pasadas.
 
-- **Ejemplo**: si en el pasado el robot tomó una acción que le acercó a su objetivo, se guarda esa acción como "buena" en su memoria, y si tomó una acción que lo alejó, aprende a evitarla.
+- **Ejemplo**: Si en el pasado el robot tomó una acción que le acercó a su objetivo, se guarda esa acción como "buena" en su memoria, y si tomó una acción que lo alejó, aprende a evitarla.
 A medida que el robot explora más, esta tabla Q se vuelve más completa y precisa, ayudando al robot a tomar decisiones más inteligentes en el futuro.
 
 - **¿Qué aporta el Deep Learning?**: En entornos complejos, como un almacén con muchas rutas, la tabla Q se vuelve enorme y difícil de gestionar. Aquí es donde entra el Deep Learning: en lugar de guardar cada acción posible, DQN utiliza una red neuronal para aprender patrones y estimar la tabla Q, almacenando solo la información esencial. Esto permite que el robot maneje entornos grandes y complejos, sin sobrecargar su memoria.
 
 - **Ventajas de DQN**
   - **Adaptabilidad**: A diferencia de los métodos tradicionales de optimización o heurísticas, el DQN permite que el robot se adapte a los cambios en el entorno (como obstáculos nuevos o rutas bloqueadas) sin necesidad de volver a calcular todo desde cero.
-  - **Aprendizaje Continuo**: DQN permite que el robot aprenda de cada acción que toma, incluso si esa acción fue una “mala decisión”. Esto le ayuda a mejorar con cada experiencia, algo que no sucede en los enfoques tradicionales.
+  - **Aprendizaje continuo**: DQN permite que el robot aprenda de cada acción que toma, incluso si esa acción fue una “mala decisión”. Esto le ayuda a mejorar con cada experiencia, algo que no sucede en los enfoques tradicionales.
 
 - **Limitaciones.**
-  - **Entrenamiento Intensivo**: El DQN requiere mucho entrenamiento antes de que el robot tome decisiones óptimas. En entornos complejos, el entrenamiento puede tomar tiempo y ser intensivo computacionalmente.
-  - **Exploración y Explotación**: DQN necesita explorar varias opciones antes de poder explotar sus conocimientos para tomar siempre las mejores decisiones. Esta fase de exploración puede llevar a que el robot tome decisiones subóptimas al inicio.
+  - **Entrenamiento intensivo**: El DQN requiere mucho entrenamiento antes de que el robot tome decisiones óptimas. En entornos complejos, el entrenamiento puede tomar tiempo y ser intensivo computacionalmente.
+  - **Exploración y explotación**: DQN necesita explorar varias opciones antes de poder explotar sus conocimientos para tomar siempre las mejores decisiones. Esta fase de exploración puede llevar a que el robot tome decisiones subóptimas al inicio.
 
-## 3. **Tecnologias.**
+## 3. **Tecnologías.**
 <small>[Volver ↥](#indice)</small>
 - **Python.**
 - **Pygame:** Crear mi propio entorno para utilizarlo en OpenAI GYM.
@@ -60,8 +60,8 @@ A medida que el robot explora más, esta tabla Q se vuelve más completa y preci
 ### Partes visuales del proyecto.
 ![Información](Assets/menu.png)
 - **Menú principal**
-  - Acceder al tutorial visual -> entrenamiento.
-  - Ver información de interes sobre el proyecto.
+  - Acceder al tutorial visual → entrenamiento.
+  - Ver información de interés sobre el proyecto.
   - Salir
 
 - **Tutorial visual de las partes visuales del proyecto.**
@@ -72,7 +72,7 @@ A medida que el robot explora más, esta tabla Q se vuelve más completa y preci
   - El premio (recompensa) que debe recoger.
   - Información como: puntuación actual, mejor puntuación, número de recompensas recogidas, episodio actual y tiempo restante.
 
-#### ¿Cómo funciona el proyecto? (Explicación para principiantes)
+### ¿Cómo funciona el proyecto?
 
 - **El objetivo:**
   El agente (un robot simulado) debe moverse por un entorno (el almacén) para recoger recompensas (premios) y evitar obstáculos. El agente aprende a moverse de forma inteligente usando un algoritmo llamado Deep Q-Learning (DQN).
@@ -95,12 +95,12 @@ A medida que el robot explora más, esta tabla Q se vuelve más completa y preci
   Al principio, el agente se mueve casi al azar. Cada vez que toma una acción, guarda en su memoria si esa acción fue buena o mala según la recompensa recibida. Con el tiempo, el agente usa esa experiencia para tomar mejores decisiones y moverse de forma más eficiente hacia la recompensa.
 
 - **Resumen visual:**
-  1. El agente aparece en el almacén.
-  2. El premio aparece en una posición aleatoria.
-  3. El agente se mueve para intentar recoger el premio.
-  4. Si lo recoge, suma puntos y el premio cambia de lugar.
-  5. Si choca o se acaba el tiempo, pierde puntos y el episodio termina.
-  6. El proceso se repite y el agente aprende a mejorar en cada intento.
+  - El agente aparece en el almacén.
+  - El premio aparece en una posición aleatoria.
+  - El agente se mueve para intentar recoger el premio.
+  - Si lo recoge, suma puntos y el premio cambia de lugar.
+  - Si choca o se acaba el tiempo, pierde puntos y el episodio termina.
+  - El proceso se repite y el agente aprende a mejorar en cada intento.
 
 ### Instrucciones para ejecutarlo en local.
 
@@ -150,4 +150,12 @@ A continuación se explica cómo descargar y ejecutar el proyecto en tu propio o
 **Notas:**
 - Si tienes problemas con imágenes o rutas, asegúrate de que las carpetas y archivos estén en la ubicación correcta (no cambies la estructura de carpetas).
 - Si ves una ventana negra que se cierra rápido, puede que falte alguna librería o haya un error. Intenta abrir el archivo desde IDLE (abre IDLE, ve a Archivo > Abrir, selecciona `main.py` y pulsa F5 para ejecutarlo). Así podrás ver los mensajes de error.
-- Si tienes dudas, busca en YouTube "cómo ejecutar un archivo Python en Windows" para ver ejemplos visuales.
+- Si tienes dudas, me puedes preguntar o, si prefieres algún tutorial, en YouTube puedes buscar "cómo ejecutar un archivo Python en Windows" para ver ejemplos visuales.
+
+---
+
+## Redes sociales y contacto
+
+- [LinkedIn](https://www.linkedin.com/in/car-her-mer/)  
+
+[⬆ Volver al inicio](#indice)
