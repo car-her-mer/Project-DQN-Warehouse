@@ -1,10 +1,25 @@
-PIL
+# Librerías necesarias para el proyecto
+# Puedes instalar todas con: pip install -r requirements.txt
+
+# --- Librerías principales de Python ---
 numpy
-sys
-os
-gym
+matplotlib
+
+# --- Librerías para Deep Learning y RL ---
 tensorflow
 keras
-matplotlib
+gym
+
+# --- Librerías para la interfaz gráfica y entorno ---
 pygame
-time
+Pillow  # PIL ahora se instala como Pillow
+
+# --- (No es necesario instalar sys, os, ni time: son parte de Python estándar) ---
+
+# --- Otras dependencias útiles ---
+# Si usas OpenAI Gym clásico, puedes añadir:
+# gym[classic_control]
+# Si usas imágenes PNG/JPG, Pillow es suficiente
+
+# Si en el futuro usas pandas para análisis de datos, añade:
+# pandas

@@ -1,16 +1,13 @@
-# Este es el archivo que ejecutará tu aplicación. 
-# Aquí se importarán las funciones y clases de otros archivos,
-# y se gestionará la lógica general de tu proyecto. 
-# Al ser el archivo principal, este manejará la ejecución del menú, 
-# los eventos del usuario y el paso de un menú a otro. 
-# Además, iniciará la ejecución del entorno de OpenAI Gym cuando el usuario lo decida.
-
-# se cargan los menús de la interfaz gráfica, 
-# llamando a las funciones de menu_principal.py y menu_info.py.
+# Archivo principal del proyecto.
+# Este archivo es el punto de entrada de la aplicación.
+# Aquí se importa y lanza el menú principal, y según la opción elegida por el usuario,
+# se inicia el entorno de entrenamiento de OpenAI Gym.
+# Toda la navegación y lógica general del flujo de la app comienza aquí.
 
 from Menus import menu_principal
 from Entorno.Entrenamiento import IniciarEntorno
 
+# Mostrar el menú principal y comprobar la opción elegida
 if menu_principal.mostrar_menu() == "entrenar":
-    # Crear una instancia del entorno
-    mi_entorno = IniciarEntorno()  # Instancia de la clase que contiene el código del entorno
+    # Si el usuario elige entrenar, se inicia el entorno de entrenamiento
+    mi_entorno = IniciarEntorno()  # Llama a la función que ejecuta el entorno y el agente

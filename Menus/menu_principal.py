@@ -1,9 +1,9 @@
-# Este archivo contiene la lógica para mostrar el menú principal de la aplicación, 
-# con botones para ir a otros menús, como el de información del proyecto o el entorno de OpenAI Gym.
-
-# En el menú principal, el usuario puede hacer clic en botones para:
-# # Ir al menú de información (carga menu_info.py).
-# # Ir al entorno de OpenAI Gym (ejecuta ejecutar_gym.py).
+# Menú principal de la aplicación.
+# Este archivo muestra la pantalla inicial donde el usuario puede elegir:
+# - Iniciar el entrenamiento del agente (DQN)
+# - Ver información sobre el proyecto
+# - Salir de la aplicación
+# El menú se maneja con el teclado (flechas y Enter) y llama a otros menús según la opción elegida.
 
 import pygame
 import sys
@@ -163,43 +163,45 @@ def mostrar_informacion(pantalla, fuente):
         "Para volver dale a ESC."
     ]
 
-    scroll_offset = 0
-    line_height = 40
-    ancho_pantalla = pantalla.get_width()
+    scroll_offset = 0  # Cuánto se ha desplazado el scroll (en píxeles)
+    line_height = 40  # Altura de cada línea de texto (en píxeles)
+    ancho_pantalla = pantalla.get_width()  # Ancho de la pantalla para ajustar el texto
 
-    fuente = crear_fuente(pantalla, porcentaje_altura=0.04)
+    fuente = crear_fuente(pantalla, porcentaje_altura=0.04)  # Crear fuente más pequeña para el texto informativo
 
-    # Ajustar todas las líneas antes de empezar
-    lineas_ajustadas = []
+    # Ajustar todas las líneas antes de empezar (para que el texto no se salga de la pantalla)
+    lineas_ajustadas = []  # Lista donde se guardarán todas las líneas ajustadas
     for texto in informacion:
-        lineas = ajustar_texto(texto, fuente, ancho_pantalla - 100)
-        lineas_ajustadas.extend(lineas)
+        lineas = ajustar_texto(texto, fuente, ancho_pantalla - 100)  # Ajustar cada línea al ancho disponible
+        lineas_ajustadas.extend(lineas)  # Añadir las líneas ajustadas a la lista final
 
     # Calcular altura total real y scroll máximo
-    total_altura = len(lineas_ajustadas) * line_height
-    max_scroll = max(0, total_altura - pantalla.get_height() + 50)  # +50 de margen superior
+    total_altura = len(lineas_ajustadas) * line_height  # Altura total de todo el texto
+    max_scroll = max(0, total_altura - pantalla.get_height() + 50)  # Máximo desplazamiento permitido
 
-    esperando = True
+    esperando = True  # Variable de control para el bucle de espera
     while esperando:
-        pantalla.fill((0, 0, 0))
-        y_offset = 50 - scroll_offset
+        pantalla.fill((0, 0, 0))  # Limpiar la pantalla (fondo negro)
+        y_offset = 50 - scroll_offset  # Posición vertical inicial, ajustada por el scroll
 
+        # Dibujar cada línea de texto en la pantalla
         for linea in lineas_ajustadas:
-            if y_offset + line_height > 0 and y_offset < pantalla.get_height():
-                texto_renderizado = fuente.render(linea, True, (255, 255, 255))
-                pantalla.blit(texto_renderizado, (50, y_offset))
-            y_offset += line_height
+            if y_offset + line_height > 0 and y_offset < pantalla.get_height():  # Solo dibujar si está visible
+                texto_renderizado = fuente.render(linea, True, (255, 255, 255))  # Renderizar texto en blanco
+                pantalla.blit(texto_renderizado, (50, y_offset))  # Dibujar texto en la pantalla
+            y_offset += line_height  # Mover hacia abajo para la siguiente línea
 
-        pygame.display.flip()
+        pygame.display.flip()  # Actualizar la pantalla para mostrar los cambios
 
+        # Manejar eventos del teclado y ventana
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_ESCAPE:
-                    esperando = False
+                    esperando = False  # Salir de la pantalla de información
                 elif evento.key == pygame.K_DOWN:
-                    scroll_offset = min(scroll_offset + line_height, max_scroll)
+                    scroll_offset = min(scroll_offset + line_height, max_scroll)  # Bajar scroll
                 elif evento.key == pygame.K_UP:
-                    scroll_offset = max(scroll_offset - line_height, 0)
+                    scroll_offset = max(scroll_offset - line_height, 0)  # Subir scroll

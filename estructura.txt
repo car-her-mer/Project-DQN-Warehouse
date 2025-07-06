@@ -24,5 +24,5 @@ El flujo de ejecución del código sería algo como esto:
 El archivo main.py se ejecuta.
 main.py carga el menú principal de menu_principal.py.
 Cuando el usuario hace clic en "Ir a Información", se muestra la información.
-Cuando el usuario hace clic en "Ejecutar Entorno Gym", se muestra un submenu para mostrar resumidamente la parte visual.
+Cuando el usuario hace clic en "Ejecutar Entorno Gym", se muestra un mini tutorial visual para mostrar resumidamente la parte visual.
     Al darle a continuar, se ejecuta el archivo Entrenamiento.py para iniciar el entorno de OpenAI Gym.

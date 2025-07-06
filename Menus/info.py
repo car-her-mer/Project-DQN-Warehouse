@@ -1,3 +1,7 @@
+# Pantalla de información del proyecto.
+# Este archivo muestra una imagen con información y un botón para continuar.
+# Se usa como pantalla intermedia antes de iniciar el entrenamiento o volver al menú principal.
+
 import pygame
 import sys
 import os
@@ -18,32 +22,33 @@ def mostrar_submenu(pantalla):
     boton_ancho = 200
     boton_alto = 50
     boton_x = 20
-    boton_y = alto - boton_alto - 20
-    boton_rect = pygame.Rect(boton_x, boton_y, boton_ancho, boton_alto)
+    boton_y = alto - boton_alto - 20  # Posición vertical del botón (20 píxeles desde abajo)
+    boton_rect = pygame.Rect(boton_x, boton_y, boton_ancho, boton_alto)  # Crear el rectángulo del botón
 
-    ejecutando = True
+    ejecutando = True  # Controla el bucle principal de la pantalla
     while ejecutando:
-        pantalla.fill((30, 30, 30))
+        pantalla.fill((30, 30, 30))  # Rellenar el fondo con un color gris oscuro
 
-        # Mostrar imagen
+        # Mostrar imagen de información ocupando toda la ventana
         pantalla.blit(imagen, (0, 0))
 
-        # Mostrar botón
-        pygame.draw.rect(pantalla, (100, 200, 100), boton_rect)
-        texto_boton = fuente.render("Continuar", True, (0, 0, 0))
+        # Dibujar el botón en la esquina inferior izquierda
+        pygame.draw.rect(pantalla, (100, 200, 100), boton_rect)  # Botón verde
+        texto_boton = fuente.render("Continuar", True, (0, 0, 0))  # Texto del botón en negro
 
-        # Centra el texto dentro del botón
+        # Centrar el texto dentro del botón
         texto_boton_rect = texto_boton.get_rect(center=boton_rect.center)
         pantalla.blit(texto_boton, texto_boton_rect)
 
-        pygame.display.flip()
+        pygame.display.flip()  # Actualizar la pantalla para mostrar los cambios
 
+        # Manejar eventos del usuario (teclado, ratón, cerrar ventana)
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
-                ejecutando = False
+                ejecutando = False  # Salir si se pulsa ESC
             elif evento.type == pygame.MOUSEBUTTONDOWN:
-                if boton_rect.collidepoint(evento.pos):
-                    return "entrenar"  # ← Aquí retorna al menú principal
+                if boton_rect.collidepoint(evento.pos):  # Si se hace clic en el botón
+                    return "entrenar"  # ← Aquí retorna al menú principal o siguiente acción

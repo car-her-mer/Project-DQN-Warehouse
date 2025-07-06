@@ -58,12 +58,96 @@ A medida que el robot explora más, esta tabla Q se vuelve más completa y preci
 ## 4. **Proyecto.**
 <small>[Volver ↥](#indice)</small>
 ### Partes visuales del proyecto.
-![Información](Assets/info.png)
+![Información](Assets/menu.png)
+- **Menú principal**
+  - Acceder al tutorial visual -> entrenamiento.
+  - Ver información de interes sobre el proyecto.
+  - Salir
 
-### Explicación funcional.
-Como gana puntos.
-Como pierde puntos.
+- **Tutorial visual de las partes visuales del proyecto.**
+![Información](Assets/info.png)
+- ¿Qué ves en la pantalla?
+  - El entorno del almacén (imagen de fondo).
+  - El agente (robot) moviéndose.
+  - El premio (recompensa) que debe recoger.
+  - Información como: puntuación actual, mejor puntuación, número de recompensas recogidas, episodio actual y tiempo restante.
+
+#### ¿Cómo funciona el proyecto? (Explicación para principiantes)
+
+- **El objetivo:**
+  El agente (un robot simulado) debe moverse por un entorno (el almacén) para recoger recompensas (premios) y evitar obstáculos. El agente aprende a moverse de forma inteligente usando un algoritmo llamado Deep Q-Learning (DQN).
+
+- **¿Cómo se mueve el agente?**
+  El agente puede moverse en cuatro direcciones: izquierda, derecha, arriba y abajo. Cada vez que el agente toma una acción, el entorno le dice si esa acción fue buena o mala mediante una "recompensa" (un número positivo o negativo).
+
+- **¿Cómo gana puntos?**
+  - Si el agente se acerca a la recompensa, gana puntos (+1).
+  - Si el agente recoge la recompensa (llega al premio), gana muchos puntos (+50) y el premio cambia de lugar.
+
+- **¿Cómo pierde puntos?**
+  - Si el agente se aleja de la recompensa, pierde puntos (-1).
+  - Si choca contra un obstáculo o se acaba el tiempo del episodio, pierde muchos puntos (-10) y el episodio termina.
+
+- **¿Qué es un episodio?**
+  Un episodio es una partida: empieza cuando el agente aparece en el entorno, tratará de coger tantas recompensas como pueda y termina cuando choca o se acaba el tiempo. Al terminar, el entorno se reinicia y el agente vuelve a intentarlo, aprendiendo de sus errores y aciertos.
+
+- **¿Cómo aprende el agente?**
+  Al principio, el agente se mueve casi al azar. Cada vez que toma una acción, guarda en su memoria si esa acción fue buena o mala según la recompensa recibida. Con el tiempo, el agente usa esa experiencia para tomar mejores decisiones y moverse de forma más eficiente hacia la recompensa.
+
+- **Resumen visual:**
+  1. El agente aparece en el almacén.
+  2. El premio aparece en una posición aleatoria.
+  3. El agente se mueve para intentar recoger el premio.
+  4. Si lo recoge, suma puntos y el premio cambia de lugar.
+  5. Si choca o se acaba el tiempo, pierde puntos y el episodio termina.
+  6. El proceso se repite y el agente aprende a mejorar en cada intento.
 
 ### Instrucciones para ejecutarlo en local.
-pasos para sacarlo de github a tu local
-pasos para ejecutarlo en local
+
+A continuación se explica cómo descargar y ejecutar el proyecto en tu propio ordenador, pensado para principiantes que no tienen experiencia con Git ni con la terminal:
+
+1. **Descargar el proyecto desde GitHub (sin usar Git ni terminal)**
+   - Ve a la página del repositorio en GitHub usando tu navegador web.
+   - Busca el botón verde que dice "Code" y haz clic en él.
+   - Selecciona la opción "Download ZIP".
+   - Se descargará un archivo comprimido `.zip` con todo el proyecto.
+   - Busca el archivo descargado (normalmente en la carpeta "Descargas") y haz doble clic para descomprimirlo. Se creará una carpeta con todos los archivos del proyecto.
+
+2. **Instalar Python**
+   - Si no tienes Python instalado, descárgalo desde [python.org](https://www.python.org/downloads/).
+   - Instala Python siguiendo los pasos del instalador (asegúrate de marcar la casilla "Add Python to PATH" durante la instalación).
+   - Para comprobar si tienes Python instalado, tienes dos opciones:
+     - **Opción 1:** Abre el menú Inicio y busca "IDLE" o "Python". Si aparece, ya lo tienes instalado.
+     - **Opción 2:** Abre el menú Inicio, busca y abre "cmd" (símbolo del sistema), escribe el siguiente comando y pulsa Enter:
+       ```
+       python --version
+       ```
+       - Si ves un mensaje como `Python 3.10.0` (o cualquier versión 3.x), ya tienes Python instalado.
+       - Si te sale un error o no reconoce el comando, instala Python como se indica arriba.
+
+3. **Instalar las librerías necesarias**
+   - Abre el programa llamado "IDLE (Python)" o busca "cmd" (símbolo del sistema) en el menú Inicio.
+   - En la ventana que se abre, navega hasta la carpeta donde descomprimiste el proyecto (puedes usar el comando `cd` para cambiar de carpeta en la terminal, o simplemente abrir la terminal en esa carpeta).
+   - Escribe (o copia y pega) el siguiente comando y pulsa Enter:
+     ```
+     pip install -r requirements.txt
+     ```
+   - Esto instalará automáticamente todas las librerías necesarias para el proyecto.
+   - Si te da error con `pip`, prueba con `pip3` en vez de `pip`.
+   - Si no encuentras el archivo `requirements.txt`, puedes instalar las librerías principales una a una:
+     ```
+     pip install pygame gym tensorflow
+     ```
+
+4. **Ejecutar el proyecto**
+   - En la carpeta que descomprimiste, busca el archivo llamado `main.py` (este es el archivo principal del proyecto).
+   - Haz doble clic en `main.py`. Si todo está bien, se abrirá una ventana con el menú principal del proyecto.
+   - Si al hacer doble clic no se abre, haz clic derecho en el archivo y selecciona "Abrir con..." y elige "Python".
+
+5. **¡Listo!**
+   - Ya puedes navegar por el menú, ver la información y ejecutar el entorno de entrenamiento.
+
+**Notas:**
+- Si tienes problemas con imágenes o rutas, asegúrate de que las carpetas y archivos estén en la ubicación correcta (no cambies la estructura de carpetas).
+- Si ves una ventana negra que se cierra rápido, puede que falte alguna librería o haya un error. Intenta abrir el archivo desde IDLE (abre IDLE, ve a Archivo > Abrir, selecciona `main.py` y pulsa F5 para ejecutarlo). Así podrás ver los mensajes de error.
+- Si tienes dudas, busca en YouTube "cómo ejecutar un archivo Python en Windows" para ver ejemplos visuales.
