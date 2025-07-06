@@ -17,14 +17,14 @@ Actualmente se resuelve con tres enfoques tradicionales: *Grafos, optimización 
 - **Ejemplo conceptual**: Imagina que el robot tiene un mapa y usa un “algoritmo de optimización” como Dijkstra para saber qué camino tomar, eligiendo siempre la opción más corta en cada paso hasta llegar al destino.
 - **Limitación**: Este tipo de algoritmo supone que el entorno es estático (es decir, que no cambian las rutas o las distancias), y no tiene capacidad para adaptarse a cambios imprevistos como obstáculos.
 
-### **Heurísticas (Ejemplo: A*)**
+### **Heurísticas (Ejemplo: A\*)**
 - **Concepto**: Una heurística es una “regla rápida” que ayuda a reducir el tiempo de búsqueda de una solución sin garantizar que sea perfecta, sino lo suficientemente buena. Este enfoque se usa cuando no es práctico o posible calcular la ruta exacta, especialmente en redes grandes o complejas.
-- **Ejemplo conceptual**: El robot, en lugar de revisar todas las rutas posibles, usa una heurística, como “moverse hacia el objetivo si parece que está más cerca”, para reducir la cantidad de rutas que considera. El algoritmo A* usa una combinación de la distancia real más una “estimación” de cuánto falta para llegar al destino, lo que le permite encontrar caminos buenos más rápido que con optimización pura.
-- **Limitación**: Aunque es más rápido que Dijkstra en algunos casos, A* aún requiere que el entorno sea relativamente estable y no se adapta a cambios en tiempo real.
+- **Ejemplo conceptual**: El robot, en lugar de revisar todas las rutas posibles, usa una heurística, como “moverse hacia el objetivo si parece que está más cerca”, para reducir la cantidad de rutas que considera. El algoritmo A\* usa una combinación de la distancia real más una “estimación” de cuánto falta para llegar al destino, lo que le permite encontrar caminos buenos más rápido que con optimización pura.
+- **Limitación**: Aunque es más rápido que Dijkstra en algunos casos, A\* aún requiere que el entorno sea relativamente estable y no se adapta a cambios en tiempo real.
 
 ### **Grafos**
 - **Concepto**: Un grafo es una estructura matemática que representa elementos (llamados nodos) y sus conexiones (llamadas aristas). Los métodos basados en grafos ayudan a representar mapas de rutas o conexiones de manera que se puedan aplicar algoritmos para encontrar rutas.
-- **Ejemplo conceptual**: Imagina el almacén como una serie de puntos de interés (estanterías, áreas de recogida, etc.), conectados por caminos. Cada punto es un nodo, y cada conexión es una arista. Los algoritmos de grafos, como Dijkstra o A*, pueden entonces usarse para buscar el camino óptimo de un punto a otro en este “mapa de nodos y conexiones”.
+- **Ejemplo conceptual**: Imagina el almacén como una serie de puntos de interés (estanterías, áreas de recogida, etc.), conectados por caminos. Cada punto es un nodo, y cada conexión es una arista. Los algoritmos de grafos, como Dijkstra o A\*, pueden entonces usarse para buscar el camino óptimo de un punto a otro en este “mapa de nodos y conexiones”.
 - **Limitación**: Los grafos representan bien conexiones estáticas, pero no son dinámicos, por lo que si se bloquea una conexión, el algoritmo necesita volver a calcular todo desde cero.
 
 ## 2. **Idea.**
@@ -157,5 +157,7 @@ A continuación se explica cómo descargar y ejecutar el proyecto en tu propio o
 ## Redes sociales y contacto
 
 - [LinkedIn](https://www.linkedin.com/in/car-her-mer/)  
+
+---
 
 [⬆ Volver al inicio](#indice)
