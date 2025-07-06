@@ -1,28 +1,35 @@
-/Project RL - Warehouse/
+/Project_RL-Warehouse/
 │
 ├── /Assets/                    # Carpeta para recursos (imágenes)
-│   ├── agente.png              # imagen del agente (robot)
-│   ├── fondo.png               # imagen del fondo
-│   ├── mascaraAgente.png       # mascara del robot (para las fisicas)
-│   ├── mascaraFondoAlpha.png   # mascara del fondo (para las fisicas)
-│   └── reward.png              # imagen de la recompensa (paquete)
+│   ├── agente.png              # Imagen del agente (robot)
+│   ├── fondo.png               # Imagen del fondo
+│   ├── mascaraAgente.png       # Máscara del robot (para las físicas)
+│   ├── mascaraFondoAlpha.png   # Máscara del fondo (para las físicas)
+│   ├── reward.png              # Imagen de la recompensa (paquete)
+│   ├── menu.png                # Imagen del menú principal
+│   ├── info.png                # Imagen para la pantalla de información
+│   └── ...                     # Otros recursos gráficos utilizados en el proyecto
 │
 ├── /Entorno/                   # Carpeta con el entrenamiento, registro del entorno en gym y pygame
-│   ├── Entrenamiento.py        # archivo que incluye el registro del entorno en openAI gym + entrenamiento DQN
-│   └── Warehouse.py            # archivo que incluye paygame para la parte visual + sumar puntos / restar puntos
+│   ├── Entrenamiento.py        # Registro del entorno en OpenAI Gym + entrenamiento DQN
+│   └── Warehouse.py            # Entorno visual con Pygame + lógica de puntos
 │
 ├── /Menus/                     # Carpeta para los diferentes menús
 │   ├── menu_principal.py       # Lógica para el menú principal
 │   └── info.py                 # Lógica para mostrar información visual
 │
 ├── main.py                     # Archivo principal que orquesta la aplicación
-└── README.md                   # Información general sobre el proyecto
+├── requeriments.txt            # Dependencias necesarias del proyecto
+└── Readme.md                   # Información general sobre el proyecto
 
 Flujo de Ejecución del Código
-El flujo de ejecución del código sería algo como esto:
+El flujo de ejecución del código es el siguiente:
 
-El archivo main.py se ejecuta.
-main.py carga el menú principal de menu_principal.py.
-Cuando el usuario hace clic en "Ir a Información", se muestra la información.
-Cuando el usuario hace clic en "Ejecutar Entorno Gym", se muestra un mini tutorial visual para mostrar resumidamente la parte visual.
-    Al darle a continuar, se ejecuta el archivo Entrenamiento.py para iniciar el entorno de OpenAI Gym.
+1. El archivo main.py se ejecuta y muestra el menú principal (Menus/menu_principal.py).
+2. Desde el menú principal, el usuario puede elegir:
+   - Ver información: se muestra la pantalla de información (Menus/info.py).
+   - Ejecutar entorno Gym: se muestra un mini tutorial visual y, al continuar, se ejecuta el entorno de entrenamiento (Entorno/Entrenamiento.py), que utiliza Warehouse.py para la parte visual y la lógica de recompensas.
+   - Salir: cierra la aplicación.
+3. Durante la ejecución del entorno, el usuario puede observar cómo el agente interactúa con el entorno, recoge recompensas y aprende mediante el algoritmo DQN.
+4. Al finalizar un episodio, automáticamente se inicia un nuevo episodio para que el agente siga aprendiendo.
+5. Si el usuario cierra la ventana del entorno o del menú principal, el programa finaliza completamente.
